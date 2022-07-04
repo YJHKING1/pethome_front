@@ -1,0 +1,7 @@
+.DS_Store
+pethome_admin/node_modules/
+npm-debug.log
+.editorconfig
+dist/
+/.idea/
+/pethome_user/node_modules/
