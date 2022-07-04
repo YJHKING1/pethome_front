@@ -1,4 +1,4 @@
 <template>
-  <section>page5...
-  </section>
+    <section>page5...
+    </section>
 </template>
