@@ -135,7 +135,7 @@ export default {
                 age: 0,
                 state: 0,
                 departmentId: null,
-                department: '',
+                department: null,
                 logininfoId: null,
                 shopId: null
             }
@@ -236,7 +236,7 @@ export default {
                 age: 0,
                 state: 0,
                 departmentId: null,
-                department: '',
+                department: null,
                 logininfoId: null,
                 shopId: null
             };
