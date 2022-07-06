@@ -114,10 +114,8 @@ export default {
             console.log('submit!');
         },
         handleopen() {
-            //console.log('handleopen');
         },
         handleclose() {
-            //console.log('handleclose');
         },
         handleselect: function (a, b) {
         },
@@ -130,10 +128,7 @@ export default {
                 sessionStorage.removeItem('user');
                 _this.$router.push('/login');
             }).catch(() => {
-
             });
-
-
         },
         //折叠导航栏
         collapse: function () {
@@ -150,7 +145,6 @@ export default {
             this.sysUserName = user.name || '';
             this.sysUserAvatar = user.avatar || '';
         }
-
     }
 }
 

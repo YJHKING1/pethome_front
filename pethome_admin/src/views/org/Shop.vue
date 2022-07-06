@@ -15,7 +15,7 @@
             </el-form>
         </el-col>
         <!--列表-->
-        <el-table :data="employees" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
+        <el-table :data="shops" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
                   style="width: 100%;">
             <el-table-column type="selection" width="55">
             </el-table-column>
@@ -23,25 +23,21 @@
             </el-table-column>
             <el-table-column prop="id" label="id" width="60" sortable>
             </el-table-column>
-            <el-table-column prop="username" label="姓名" width="100" sortable>
+            <el-table-column prop="name" label="店名" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="phone" label="电话" width="150" sortable>
+            <el-table-column prop="tel" label="电话" width="150" sortable>
             </el-table-column>
-            <el-table-column prop="email" label="电邮" width="150" sortable>
+            <el-table-column prop="employee.username" label="店长" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="age" label="年纪" width="100" sortable>
-            </el-table-column>
-            <el-table-column prop="logininfoId" label="登录Id" width="100" sortable>
-            </el-table-column>
-            <el-table-column prop="department.name" label="部门" width="100" sortable>
-            </el-table-column>
-            <el-table-column prop="shop.name" label="店铺" width="100" sortable>
-            </el-table-column>
-            <el-table-column prop="state" label="状态" min-width="100" sortable>
+            <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
                     <span v-if="scope.row.state==1" style="color: green">正常</span>
                     <span v-else style="color: red">停用</span>
                 </template>
+            </el-table-column>
+            <el-table-column prop="registerTime" label="注册时间" width="150" sortable>
+            </el-table-column>
+            <el-table-column prop="address" label="地址" min-width="300" sortable>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
@@ -60,29 +56,20 @@
         <!--编辑界面-->
         <el-dialog :title="title" :visible.sync="saveFormVisible" :close-on-click-modal="false">
             <el-form :model="saveForm" label-width="80px" :rules="saveFormRules" ref="saveForm">
-                <el-form-item prop="username" label="姓名">
-                    <el-input v-model="saveForm.username"></el-input>
+                <el-form-item prop="name" label="姓名">
+                    <el-input v-model="saveForm.name"></el-input>
                 </el-form-item>
-                <el-form-item prop="phone" label="电话">
-                    <el-input v-model="saveForm.phone"></el-input>
+                <el-form-item prop="tel" label="电话">
+                    <el-input v-model="saveForm.tel"></el-input>
                 </el-form-item>
-                <el-form-item prop="email" label="电邮">
-                    <el-input v-model="saveForm.email"></el-input>
+                <el-form-item prop="address" label="地址">
+                    <el-input v-model="saveForm.address"></el-input>
                 </el-form-item>
-                <el-form-item prop="age" label="年纪">
-                    <el-input-number v-model="saveForm.age"></el-input-number>
-                </el-form-item>
-                <el-form-item prop="departmentId" label="部门">
-                    <el-select v-model="saveForm.departmentId" value-key="id" placeholder="请选择经理" clearable>
-                        <el-option v-for="item in departments" :label="item.name" :value="item">
-                            <span style="float: left">{{ item.name }}</span>
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item prop="shopId" label="店铺">
-                    <el-select v-model="saveForm.shopId" value-key="id" placeholder="请选择经理" clearable>
-                        <el-option v-for="item in shops" :label="item.name" :value="item">
-                            <span style="float: left">{{ item.name }}</span>
+                <el-form-item prop="adminId" label="经理">
+                    <el-select v-model="saveForm.adminId" value-key="id" placeholder="请选择经理" clearable>
+                        <el-option v-for="item in managers" :label="item.username" :value="item">
+                            <span style="float: left">{{ item.username }}</span>
+                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.phone }}</span>
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -108,7 +95,7 @@ export default {
                 name: ''
             },
             // 列表数据
-            employees: [],
+            shops: [],
             // 加载框
             listLoading: false,
             // 总数
@@ -120,10 +107,8 @@ export default {
             // 列表选中列
             sels: [],
             title: "",
-            // 部门集合
-            departments: [],
-            // 店铺集合
-            shops: [],
+            // 经理
+            managers: [],
             // 关键字
             keyword: '',
             saveFormVisible: false,//编辑界面是否显示
@@ -139,18 +124,14 @@ export default {
             //编辑界面数据
             saveForm: {
                 id: null,
-                username: '',
-                phone: '',
-                email: '',
-                salt: '',
-                password: '',
-                age: 0,
+                name: '',
+                tel: '',
+                registerTime: null,
                 state: 0,
-                departmentId: null,
-                department: null,
-                logininfoId: null,
-                shopId: null,
-                shop: null
+                address: '',
+                logo: '',
+                adminId: null,
+                employee: null
             }
         }
     },
@@ -158,26 +139,21 @@ export default {
         // 点击页码
         handleCurrentChange(val) {
             this.currentPage = val;
-            this.getEmployees();
+            this.getShops();
         },
         // 关键字查询
         keywordQuery() {
             this.currentPage = 1;
-            this.getEmployees();
+            this.getShops();
         },
         // 经理集合
-        getDepartments() {
-            this.$http.get("/department").then(res => {
-                this.departments = res.data;
-            });
-        },// 经理集合
-        getShops() {
-            this.$http.get("/shop").then(res => {
-                this.shops = res.data;
+        getManagers() {
+            this.$http.get("/employee").then(res => {
+                this.managers = res.data;
             });
         },
         // 获取员工列表
-        getEmployees() {
+        getShops() {
             let para = {
                 "currentPage": this.currentPage,
                 "pageSize": this.pageSize,
@@ -185,11 +161,11 @@ export default {
             };
             // 显示盲等框
             this.listLoading = true;
-            this.$http.post("/employee", para).then(res => {
+            this.$http.post("/shop", para).then(res => {
                 // 赋值总数
                 this.totals = res.data.totals;
                 // 赋值分页
-                this.employees = res.data.data;
+                this.shops = res.data.data;
                 // 关闭盲等框
                 this.listLoading = false;
             }).catch(res => {
@@ -207,7 +183,7 @@ export default {
                 // 显示等待圈
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.delete("/employee/" + row.id).
+                this.$http.delete("/shop/" + row.id).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -223,7 +199,7 @@ export default {
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getEmployees();
+                            this.getShops();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -243,8 +219,8 @@ export default {
             this.title = "编辑";
             // 备份数据
             this.saveForm = Object.assign({}, row);
-            this.getDepartments()
-            this.getShops();
+            // 获取经理集合
+            this.getManagers();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -254,21 +230,17 @@ export default {
             // 赋空值
             this.saveForm = {
                 id: null,
-                username: '',
-                phone: '',
-                email: '',
-                salt: '',
-                password: '',
-                age: 0,
+                name: '',
+                tel: '',
+                registerTime: null,
                 state: 0,
-                departmentId: null,
-                department: null,
-                logininfoId: null,
-                shopId: null,
-                shop: null
+                address: '',
+                logo: '',
+                adminId: null,
+                employee: null
             };
-            this.getDepartments()
-            this.getShops();
+            // 获取经理集合
+            this.getManagers();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -280,16 +252,15 @@ export default {
                         this.saveLoading = true;
                         // 此为表单中的数据
                         let paras = Object.assign({}, this.saveForm);
-                        paras.shopId = this.saveForm.shopId.id;
-                        paras.departmentId = this.saveForm.departmentId.id;
-                        paras.department = null;
-                        paras.shop = null;
-                        this.$http.put("/employee", paras).then(res => {
+                        // 将经理id赋值为经理id（不赋则为对象）
+                        paras.adminId = this.saveForm.adminId.id;
+                        paras.employee = null;
+                        this.$http.put("/shop", paras).then(res => {
                             this.saveFormVisible = false;
                             this.saveLoading = false;
                             if (res.data.success) {
                                 this.$message.success(this.title + "成功");
-                                this.getEmployees();
+                                this.getShops();
                             } else {
                                 this.$message.error("网络繁忙，500");
                             }
@@ -312,7 +283,7 @@ export default {
             }).then(() => {
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.patch("/employee", ids).
+                this.$http.patch("/shop", ids).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -324,7 +295,7 @@ export default {
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getEmployees();
+                            this.getShops();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -340,7 +311,7 @@ export default {
         }
     },
     mounted() {
-        this.getEmployees();
+        this.getShops();
     }
 }
 </script>

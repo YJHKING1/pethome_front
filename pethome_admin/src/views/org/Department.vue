@@ -139,16 +139,6 @@
 </template>
 
 <script>
-/*import util from '../../common/js/util'
-//import NProgress from 'nprogress'
-import {
-    getDepartmentListPage,
-    removeDepartment,
-    batchRemoveDepartment,
-    editDepartment,
-    addDepartment
-} from '../../api/api';*/
-
 export default {
     data() {
         return {
