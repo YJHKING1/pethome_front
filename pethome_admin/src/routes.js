@@ -12,6 +12,9 @@ import echarts from './views/charts/echarts.vue'
 import Department from "./views/org/Department";
 import Employee from "./views/org/Employee";
 import Shop from "./views/org/Shop";
+import Systemdictionarydetail from "./views/org/Systemdictionarydetail";
+import Systemdictionarytype from "./views/org/Systemdictionarytype";
+import ShopRegister from "./views/org/ShopRegister";
 
 let routes = [
     {
@@ -23,6 +26,12 @@ let routes = [
     {
         path: '/404',
         component: NotFound,
+        name: '',
+        hidden: true
+    },
+    {
+        path: '/register',
+        component: ShopRegister,
         name: '',
         hidden: true
     },
@@ -45,7 +54,9 @@ let routes = [
             {path: '/main', component: Main, name: '主页', hidden: true},
             {path: '/department', component: Department, name: '部门'},
             {path: '/employee', component: Employee, name: '员工'},
-            {path: '/shop', component: Shop, name: '店铺'}
+            {path: '/shop', component: Shop, name: '店铺'},
+            {path: '/systemdictionarydetail', component: Systemdictionarydetail, name: '数据字典明细'},
+            {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'}
         ]
     },
     {

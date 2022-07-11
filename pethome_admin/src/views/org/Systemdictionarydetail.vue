@@ -4,7 +4,7 @@
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
             <el-form :inline="true">
                 <el-form-item>
-                    <el-input v-model="keyword" placeholder="姓名关键字"></el-input>
+                    <el-input v-model="keyword" placeholder="id、名称、类型、类型id"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" v-on:click="keywordQuery">查询</el-button>
@@ -15,29 +15,18 @@
             </el-form>
         </el-col>
         <!--列表-->
-        <el-table :data="shops" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
-                  style="width: 100%;" @row-dblclick="openTable">
+        <el-table :data="systemdictionarydetails" highlight-current-row v-loading="listLoading"
+                  @selection-change="selsChange"
+                  style="width: 100%;">
             <el-table-column type="selection" width="55">
             </el-table-column>
             <el-table-column type="index" label="序号" width="60">
             </el-table-column>
             <el-table-column prop="id" label="id" width="60" sortable>
             </el-table-column>
-            <el-table-column prop="name" label="店名" width="100" sortable>
+            <el-table-column prop="name" label="名称" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="tel" label="电话" width="150" sortable>
-            </el-table-column>
-            <el-table-column prop="employee.username" label="店长" width="100" sortable>
-            </el-table-column>
-            <el-table-column prop="state" label="状态" width="100" sortable>
-                <template scope="scope">
-                    <span v-if="scope.row.state==1" style="color: green">正常</span>
-                    <span v-else style="color: red">停用</span>
-                </template>
-            </el-table-column>
-            <el-table-column prop="registerTime" label="注册时间" width="150" sortable>
-            </el-table-column>
-            <el-table-column prop="address" label="地址" min-width="300" sortable>
+            <el-table-column prop="systemdictionarytype.name" label="类型" width="150" sortable>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
@@ -56,28 +45,16 @@
         <!--编辑界面-->
         <el-dialog :title="title" :visible.sync="saveFormVisible" :close-on-click-modal="false">
             <el-form :model="saveForm" label-width="80px" :rules="saveFormRules" ref="saveForm">
-                <el-form-item prop="name" label="姓名">
+                <el-form-item prop="name" label="名称">
                     <el-input v-model="saveForm.name"></el-input>
                 </el-form-item>
-                <el-form-item prop="tel" label="电话">
-                    <el-input v-model="saveForm.tel"></el-input>
-                </el-form-item>
-                <el-form-item prop="address" label="地址">
-                    <el-input v-model="saveForm.address"></el-input>
-                </el-form-item>
-                <el-form-item prop="adminId" label="经理">
-                    <el-select v-model="saveForm.adminId" value-key="id" placeholder="请选择经理" clearable>
-                        <el-option v-for="item in managers" :label="item.username" :value="item">
-                            <span style="float: left">{{ item.username }}</span>
-                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.phone }}</span>
+                <el-form-item prop="typesId" label="类型">
+                    <el-select v-model="saveForm.systemdictionarytype" value-key="id" placeholder="请选择类型" clearable>
+                        <el-option v-for="item in systemdictionarytypes" :label="item.name" :value="item">
+                            <span style="float: left">{{ item.name }}</span>
+                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.sn }}</span>
                         </el-option>
                     </el-select>
-                </el-form-item>
-                <el-form-item label="启用状态">
-                    <el-radio-group v-model="saveForm.state">
-                        <el-radio class="radio" :label="1">正常</el-radio>
-                        <el-radio class="radio" :label="0">停用</el-radio>
-                    </el-radio-group>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -85,42 +62,6 @@
                 <el-button type="primary" @click.native="saveSubmit" :loading="saveLoading">提交</el-button>
             </div>
         </el-dialog>
-        <!--抽屉-->
-        <el-drawer
-            title="员工列表"
-            :visible.sync="table"
-            direction="rtl"
-            size="50%">
-            <el-table :data="employees" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
-                      style="width: 100%;">
-                <el-table-column type="selection" width="55">
-                </el-table-column>
-                <el-table-column type="index" label="序号" width="60">
-                </el-table-column>
-                <el-table-column prop="id" label="id" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="username" label="姓名" width="80" sortable>
-                </el-table-column>
-                <el-table-column prop="phone" label="电话" width="150" sortable>
-                </el-table-column>
-                <el-table-column prop="email" label="电邮" width="150" sortable>
-                </el-table-column>
-                <el-table-column prop="age" label="年纪" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="logininfoId" label="登录Id" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="department.name" label="部门" width="100" sortable>
-                </el-table-column>
-                <el-table-column prop="shop.name" label="店铺" width="100" sortable>
-                </el-table-column>
-                <el-table-column prop="state" label="状态" width="100" sortable>
-                    <template scope="scope">
-                        <span v-if="scope.row.state==1" style="color: green">正常</span>
-                        <span v-else style="color: red">停用</span>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-drawer>
     </section>
 </template>
 <script>
@@ -131,9 +72,7 @@ export default {
                 name: ''
             },
             // 列表数据
-            shops: [],
-            // 员工列表
-            employees: [],
+            systemdictionarydetails: [],
             // 加载框
             listLoading: false,
             // 总数
@@ -145,34 +84,27 @@ export default {
             // 列表选中列
             sels: [],
             title: "",
-            // 经理
-            managers: [],
             // 关键字
             keyword: '',
-            // 抽屉显示
-            table: false,
+            // 字典类型
+            systemdictionarytypes: [],
             // 编辑界面是否显示
             saveFormVisible: false,
             saveLoading: false,
             saveFormRules: {
-                /*name: [
-                    {required: true, message: '请输入部门名', trigger: 'blur'}
+                name: [
+                    {required: true, message: '请输入名称', trigger: 'blur'}
                 ],
-                sn: [
-                    {required: true, message: '请输入编号', trigger: 'blur'}
-                ]*/
+                systemdictionarytype: [
+                    {required: true, message: '请选择分类', trigger: 'blur'}
+                ]
             },
             //编辑界面数据
             saveForm: {
                 id: null,
                 name: '',
-                tel: '',
-                registerTime: null,
-                state: 0,
-                address: '',
-                logo: '',
-                adminId: null,
-                employee: null
+                typesId: null,
+                systemdictionarytype: null
             }
         }
     },
@@ -180,48 +112,21 @@ export default {
         // 点击页码
         handleCurrentChange(val) {
             this.currentPage = val;
-            this.getShops();
+            this.getSystemdictionarydetails();
         },
         // 关键字查询
         keywordQuery() {
             this.currentPage = 1;
-            this.getShops();
+            this.getSystemdictionarydetails();
         },
-        // 经理集合
-        getManagers() {
-            this.$http.get("/employee").then(res => {
-                this.managers = res.data;
-            });
-        },
-        // 打开抽屉
-        openTable() {
-            // 获取员工表
-            this.getEmployees();
-            // 打开抽屉
-            this.table = true;
-        },
-        // 获取员工列表
-        getEmployees() {
-            let para = {
-                "currentPage": this.currentPage,
-                "pageSize": this.pageSize,
-                "keyword": this.keyword
-            };
-            // 显示盲等框
-            this.listLoading = true;
-            this.$http.post("/employee", para).then(res => {
-                // 赋值总数
-                this.totals = res.data.totals;
-                // 赋值分页
-                this.employees = res.data.data;
-                // 关闭盲等框
-                this.listLoading = false;
-            }).catch(res => {
-                this.$message.error("网络繁忙，请稍后再试");
+        // 获取字典类型
+        getSystemdictionarytypes() {
+            this.$http.get("/systemdictionarytype").then(res => {
+                this.systemdictionarytypes = res.data;
             });
         },
         // 获取店铺列表
-        getShops() {
+        getSystemdictionarydetails() {
             let para = {
                 "currentPage": this.currentPage,
                 "pageSize": this.pageSize,
@@ -229,11 +134,11 @@ export default {
             };
             // 显示盲等框
             this.listLoading = true;
-            this.$http.post("/shop", para).then(res => {
+            this.$http.post("/systemdictionarydetail", para).then(res => {
                 // 赋值总数
                 this.totals = res.data.totals;
                 // 赋值分页
-                this.shops = res.data.data;
+                this.systemdictionarydetails = res.data.data;
                 // 关闭盲等框
                 this.listLoading = false;
             }).catch(res => {
@@ -251,7 +156,7 @@ export default {
                 // 显示等待圈
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.delete("/shop/" + row.id).
+                this.$http.delete("/systemdictionarydetail/" + row.id).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -267,7 +172,7 @@ export default {
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getShops();
+                            this.getSystemdictionarydetails();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -287,8 +192,7 @@ export default {
             this.title = "编辑";
             // 备份数据
             this.saveForm = Object.assign({}, row);
-            // 获取经理集合
-            this.getManagers();
+            this.getSystemdictionarytypes();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -299,16 +203,10 @@ export default {
             this.saveForm = {
                 id: null,
                 name: '',
-                tel: '',
-                registerTime: null,
-                state: 0,
-                address: '',
-                logo: '',
-                adminId: null,
-                employee: null
+                typesId: null,
+                systemdictionarytype: null
             };
-            // 获取经理集合
-            this.getManagers();
+            this.getSystemdictionarytypes();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -320,15 +218,14 @@ export default {
                         this.saveLoading = true;
                         // 此为表单中的数据
                         let paras = Object.assign({}, this.saveForm);
-                        // 将经理id赋值为经理id（不赋则为对象）
-                        paras.adminId = this.saveForm.adminId.id;
-                        paras.employee = null;
-                        this.$http.put("/shop", paras).then(res => {
+                        paras.typesId = this.saveForm.systemdictionarytype.id;
+                        paras.systemdictionarytype = null;
+                        this.$http.put("/systemdictionarydetail", paras).then(res => {
                             this.saveFormVisible = false;
                             this.saveLoading = false;
                             if (res.data.success) {
                                 this.$message.success(this.title + "成功");
-                                this.getShops();
+                                this.getSystemdictionarydetails();
                             } else {
                                 this.$message.error("网络繁忙，500");
                             }
@@ -351,7 +248,7 @@ export default {
             }).then(() => {
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.patch("/shop", ids).
+                this.$http.patch("/systemdictionarydetail", ids).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -363,7 +260,7 @@ export default {
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getShops();
+                            this.getSystemdictionarydetails();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -379,7 +276,7 @@ export default {
         }
     },
     mounted() {
-        this.getShops();
+        this.getSystemdictionarydetails();
     }
 }
 </script>
