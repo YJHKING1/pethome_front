@@ -48,7 +48,7 @@
                 <el-form-item prop="name" label="名称">
                     <el-input v-model="saveForm.name"></el-input>
                 </el-form-item>
-                <el-form-item prop="typesId" label="类型">
+                <el-form-item prop="systemdictionarytype" label="类型">
                     <el-select v-model="saveForm.systemdictionarytype" value-key="id" placeholder="请选择类型" clearable>
                         <el-option v-for="item in systemdictionarytypes" :label="item.name" :value="item">
                             <span style="float: left">{{ item.name }}</span>
