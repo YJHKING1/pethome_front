@@ -152,9 +152,9 @@ export default {
                 'employee.phone': [
                     {required: true, message: '请输入手机号!', trigger: 'blur'}
                 ],
-                // logo: [
-                //     { required: true, message: '请输入店铺logo!', trigger: 'blur' }
-                // ],
+                logo: [
+                    {required: true, message: '请输入店铺logo!', trigger: 'blur'}
+                ],
                 'employee.email': [
                     {type: 'email', required: true, message: '请输入邮箱!', trigger: 'blur'}
                 ],

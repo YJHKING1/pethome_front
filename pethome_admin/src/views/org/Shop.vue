@@ -10,7 +10,10 @@
                     <el-button type="primary" v-on:click="keywordQuery">查询</el-button>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="handleAdd">新增</el-button>
+                    <el-button type="primary" @click="handleAdd" disabled>新增</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="exportData">导出</el-button>
                 </el-form-item>
             </el-form>
         </el-col>
@@ -31,24 +34,36 @@
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
-                    <span v-if="scope.row.state==1" style="color: green">正常</span>
-                    <span v-else style="color: red">停用</span>
+                    <span v-if="scope.row.state==1" style="color: hotpink">待审核</span>
+                    <span v-if="scope.row.state==2" style="color: blue">待激活</span>
+                    <span v-if="scope.row.state==3" style="color: green">正常使用</span>
+                    <span v-if="scope.row.state==4" style="color: red">驳回</span>
                 </template>
             </el-table-column>
             <el-table-column prop="registerTime" label="注册时间" width="150" sortable>
             </el-table-column>
-            <el-table-column prop="address" label="地址" min-width="300" sortable>
+            <el-table-column prop="logo" label="图标" width="100" sortable>
+                <template scope="scope">
+                    <img :src="imgPrefix+scope.row.logo" width="50px" alt="">
+                </template>
+            </el-table-column>
+            <el-table-column prop="address" label="地址" min-width="200" sortable>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
-                    <el-button type="success" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+                    <el-button type="success" size="small" @click="handleEdit(scope.$index, scope.row)" disabled>编辑
+                    </el-button>
+                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" disabled>删除
+                    </el-button>
+                    <el-button type="warning" :disabled="scope.row.state!==1" size="small"
+                               @click="handleAudit(scope.$index, scope.row)">店铺审核
+                    </el-button>
                 </template>
             </el-table-column>
         </el-table>
         <!--工具条-->
         <el-col :span="24" class="toolbar">
-            <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
+            <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0" disabled>批量删除</el-button>
             <el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :current-page="currentPage"
                            :page-size="pageSize" :total="totals" style="float:right;">
             </el-pagination>
@@ -87,40 +102,23 @@
         </el-dialog>
         <!--抽屉-->
         <el-drawer
-            title="员工列表"
             :visible.sync="table"
-            direction="rtl"
-            size="50%">
-            <el-table :data="employees" highlight-current-row v-loading="listLoading" @selection-change="selsChange"
-                      style="width: 100%;">
-                <el-table-column type="selection" width="55">
-                </el-table-column>
-                <el-table-column type="index" label="序号" width="60">
-                </el-table-column>
-                <el-table-column prop="id" label="id" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="username" label="姓名" width="80" sortable>
-                </el-table-column>
-                <el-table-column prop="phone" label="电话" width="150" sortable>
-                </el-table-column>
-                <el-table-column prop="email" label="电邮" width="150" sortable>
-                </el-table-column>
-                <el-table-column prop="age" label="年纪" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="logininfoId" label="登录Id" width="60" sortable>
-                </el-table-column>
-                <el-table-column prop="department.name" label="部门" width="100" sortable>
-                </el-table-column>
-                <el-table-column prop="shop.name" label="店铺" width="100" sortable>
-                </el-table-column>
-                <el-table-column prop="state" label="状态" width="100" sortable>
-                    <template scope="scope">
-                        <span v-if="scope.row.state==1" style="color: green">正常</span>
-                        <span v-else style="color: red">停用</span>
-                    </template>
-                </el-table-column>
-            </el-table>
+            direction="rtl">
+            <img :src="this.path" alt="">
         </el-drawer>
+        <!-- 审核模态框 -->
+        <el-dialog title="审核店铺" :visible.sync="shopAuditVisible" :close-on-click-modal="false">
+            <el-form :model="shopAuditLog" label-width="80px" ref="shopAuditLogForm">
+                <el-form-item label="备注" prop="note">
+                    <el-input type="textarea" v-model="shopAuditLog.note"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click.native="shopAuditVisible = false">取消</el-button>
+                <el-button type="primary" @click.native="auditPass">通过</el-button>
+                <el-button type="primary" @click.native="auditReject">驳回</el-button>
+            </div>
+        </el-dialog>
     </section>
 </template>
 <script>
@@ -149,8 +147,14 @@ export default {
             managers: [],
             // 关键字
             keyword: '',
+            // 图标前缀
+            imgPrefix: 'http://123.207.27.208',
+            // 图标路径
+            path: '',
             // 抽屉显示
             table: false,
+            //审核模态框
+            shopAuditVisible: false,
             // 编辑界面是否显示
             saveFormVisible: false,
             saveLoading: false,
@@ -173,6 +177,11 @@ export default {
                 logo: '',
                 adminId: null,
                 employee: null
+            },
+            //编辑界面数据
+            shopAuditLog: {
+                shopId: null,
+                note: ''
             }
         }
     },
@@ -193,12 +202,63 @@ export default {
                 this.managers = res.data;
             });
         },
+        // 导出
+        exportData() {
+            //this.$router.push({ path: '/register' });
+            location.href = "http://localhost:8080/shop/export";
+        },
         // 打开抽屉
-        openTable() {
-            // 获取员工表
-            this.getEmployees();
+        openTable(row) {
+            // 拼接图标前缀和路径
+            this.path = this.imgPrefix + row.logo;
             // 打开抽屉
             this.table = true;
+        },
+        //点击店铺审核弹出模态框
+        handleAudit(index, row) {
+            this.shopAuditLog = {
+                shopId: null,
+                note: ''
+            };
+            this.shopAuditLog.shopId = row.id;
+            this.shopAuditVisible = true;
+        },
+        //审核驳回
+        auditReject() {
+            this.$http.post("/shop/audit/reject", this.shopAuditLog).then(res => {
+                if (res.data.success) {
+                    this.$message({
+                        message: '驳回成功',
+                        type: 'success'
+                    });
+                } else {
+                    this.$message({
+                        message: '驳回失败',
+                        type: 'error'
+                    });
+                }
+                this.shopAuditVisible = false;
+                this.getShops();
+            })
+        },
+        //审核通过
+        auditPass() {
+            this.$http.post("/shop/audit/pass", this.shopAuditLog).then(result => {
+                result = result.data;
+                if (result.success) {
+                    this.$message({
+                        message: '审核通过',
+                        type: 'success'
+                    });
+                } else {
+                    this.$message({
+                        message: '审核失败',
+                        type: 'error'
+                    });
+                }
+                this.shopAuditVisible = false;
+                this.getShops();
+            })
         },
         // 获取员工列表
         getEmployees() {
