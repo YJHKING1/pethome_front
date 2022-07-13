@@ -15,6 +15,14 @@
                 <el-form-item>
                     <el-button type="primary" @click="exportData">导出</el-button>
                 </el-form-item>
+                <el-form-item>
+                    <!-- 默认name="file" -->
+                    <el-upload class="upload-demo"
+                               action="http://localhost:8080/shop/importExcel"
+                               list-type="text">
+                        <el-button type="warning">导入</el-button>
+                    </el-upload>
+                </el-form-item>
             </el-form>
         </el-col>
         <!--列表-->
@@ -53,7 +61,7 @@
                 <template scope="scope">
                     <el-button type="success" size="small" @click="handleEdit(scope.$index, scope.row)" disabled>编辑
                     </el-button>
-                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" disabled>删除
+                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除
                     </el-button>
                     <el-button type="warning" :disabled="scope.row.state!==1" size="small"
                                @click="handleAudit(scope.$index, scope.row)">店铺审核
@@ -63,7 +71,7 @@
         </el-table>
         <!--工具条-->
         <el-col :span="24" class="toolbar">
-            <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0" disabled>批量删除</el-button>
+            <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
             <el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :current-page="currentPage"
                            :page-size="pageSize" :total="totals" style="float:right;">
             </el-pagination>

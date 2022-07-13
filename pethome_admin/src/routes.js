@@ -12,9 +12,10 @@ import echarts from './views/charts/echarts.vue'
 import Department from "./views/org/Department";
 import Employee from "./views/org/Employee";
 import Shop from "./views/org/Shop";
-import Systemdictionarydetail from "./views/org/Systemdictionarydetail";
-import Systemdictionarytype from "./views/org/Systemdictionarytype";
+import Systemdictionarydetail from "./views/system/Systemdictionarydetail";
+import Systemdictionarytype from "./views/system/Systemdictionarytype";
 import ShopRegister from "./views/org/ShopRegister";
+import Activation from "./views/Activation";
 
 let routes = [
     {
@@ -32,6 +33,11 @@ let routes = [
     {
         path: '/register',
         component: ShopRegister,
+        name: '',
+        hidden: true
+    }, {
+        path: '/activation',
+        component: Activation,
         name: '',
         hidden: true
     },
