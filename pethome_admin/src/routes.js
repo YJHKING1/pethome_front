@@ -44,8 +44,8 @@ let routes = [
     {
         path: '/',
         component: Home,
-        name: 'Charts',
-        iconCls: 'fa fa-bar-chart',
+        name: '',
+        iconCls: 'el-icon-s-home',
         leaf: true,//只有一个节点
         children: [
             {path: '/echarts', component: echarts, name: '主页'}
@@ -55,24 +55,32 @@ let routes = [
         path: '/',
         component: Home,
         name: '组织机构',
-        iconCls: 'el-icon-message',//图标样式class
+        iconCls: 'el-icon-s-custom',//图标样式class
         children: [
             {path: '/main', component: Main, name: '主页', hidden: true},
             {path: '/department', component: Department, name: '部门'},
             {path: '/employee', component: Employee, name: '员工'},
-            {path: '/shop', component: Shop, name: '店铺'},
-            {path: '/systemdictionarydetail', component: Systemdictionarydetail, name: '数据字典明细'},
-            {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'}
+            {path: '/shop', component: Shop, name: '店铺'}
         ]
     },
     {
         path: '/',
         component: Home,
-        name: '导航二',
-        iconCls: 'fa fa-id-card-o',
+        name: '用户管理',
+        iconCls: 'el-icon-user-solid',
         children: [
             {path: '/page4', component: Table, name: '页面4'},
             {path: '/page5', component: Table, name: '页面5'}
+        ]
+    },
+    {
+        path: '/',
+        component: Home,
+        name: '系统',
+        iconCls: 'el-icon-s-platform',
+        children: [
+            {path: '/systemdictionarydetail', component: Systemdictionarydetail, name: '数据字典明细'},
+            {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'}
         ]
     },
     {

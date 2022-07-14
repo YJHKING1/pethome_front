@@ -15,14 +15,15 @@
                 <el-form-item>
                     <el-button type="primary" @click="exportData">导出</el-button>
                 </el-form-item>
-                <el-form-item>
-                    <!-- 默认name="file" -->
+                <!--<el-form-item>
+                    &lt;!&ndash; 默认name="file" &ndash;&gt;
                     <el-upload class="upload-demo"
                                action="http://localhost:8080/shop/importExcel"
                                list-type="text">
-                        <el-button type="warning">导入</el-button>
+                        <el-button type="primary">导入</el-button>
                     </el-upload>
-                </el-form-item>
+                </el-form-item>-->
+                <el-button type="primary" @click="dialogVisible = true">导入</el-button>
             </el-form>
         </el-col>
         <!--列表-->
@@ -127,6 +128,26 @@
                 <el-button type="primary" @click.native="auditReject">驳回</el-button>
             </div>
         </el-dialog>
+        <!--导入对话框-->
+        <el-dialog
+            title="导入"
+            :visible.sync="dialogVisible"
+            width="30%"
+            :before-close="handleClose">
+            <el-upload
+                class="upload-demo"
+                drag
+                action="http://localhost:8080/shop/importExcel"
+                list-type="text"
+                multiple>
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            </el-upload>
+            <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消导入</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确认导入</el-button>
+        </span>
+        </el-dialog>
     </section>
 </template>
 <script>
@@ -166,6 +187,8 @@ export default {
             // 编辑界面是否显示
             saveFormVisible: false,
             saveLoading: false,
+            // 导入对话框
+            dialogVisible: false,
             saveFormRules: {
                 /*name: [
                     {required: true, message: '请输入部门名', trigger: 'blur'}
@@ -221,6 +244,15 @@ export default {
             this.path = this.imgPrefix + row.logo;
             // 打开抽屉
             this.table = true;
+        },
+        // 打开导入对话框
+        handleClose(done) {
+            this.$confirm('取消导入？')
+                .then(_ => {
+                    done();
+                })
+                .catch(_ => {
+                });
         },
         //点击店铺审核弹出模态框
         handleAudit(index, row) {
