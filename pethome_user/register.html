@@ -42,24 +42,27 @@
 
                             <div class="user-email">
                                 <label for="email"><i class="am-icon-envelope-o"></i></label>
-                                <input type="email" name="" id="email" placeholder="请输入邮箱账号">
+                                <input type="email" name="" id="email" placeholder="请输入邮箱账号" v-model="emailForm.email">
                             </div>
                             <div class="user-pass">
                                 <label for="password"><i class="am-icon-lock"></i></label>
-                                <input type="password" name="" id="password" placeholder="设置密码">
+                                <input type="password" name="" id="password" placeholder="设置密码"
+                                       v-model="emailForm.password">
                             </div>
                             <div class="user-pass">
                                 <label for="passwordRepeat"><i class="am-icon-lock"></i></label>
-                                <input type="password" name="" id="passwordRepeat" placeholder="确认密码">
+                                <input type="password" name="" id="passwordRepeat" placeholder="确认密码"
+                                       v-model="emailForm.passwordRepeat">
                             </div>
                         </form>
                         <div class="login-links">
                             <label for="reader-me">
-                                <input id="reader-me" type="checkbox"> 点击表示您同意商城《服务协议》
+                                <input id="reader-me" type="checkbox" v-model="agree"> 点击表示您同意商城《服务协议》
                             </label>
                         </div>
                         <div class="am-cf">
-                            <input type="submit" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl">
+                            <input type="submit" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl"
+                                   @click="emailGet">
                         </div>
                     </div>
 
@@ -139,14 +142,24 @@
     new Vue({
         el: '#app',
         data: {
-            //获取图形验证码响应一个base64位的字符串
+            // 获取图形验证码响应一个base64位的字符串
             base64ImageCode: '',
             base64ImageCodePrefix: 'data:image/jpeg;base64,',
+            // 同意协议
+            agree: false,
+            // 手机号注册表单
             phoneUserForm: {
                 imageCode: ''
+            },
+            // 邮箱注册表单
+            emailForm: {
+                email: '',
+                password: '',
+                passwordRepeat: ''
             }
         },
         methods: {
+            // 设置uuid
             createUuid() {
                 var s = [];
                 var hexDigits = "0123456789abcdefghi";
@@ -160,6 +173,7 @@
                 var uuid = s.join("");
                 return uuid;
             },
+            // 获得图片验证码
             getImageCode() {
                 //1.从localStorage中获取key：phoneRegisterCodeKey
                 var key = localStorage.getItem("phoneRegisterCodeKey");
@@ -173,9 +187,60 @@
                     //4.在回调函数获取响应的数据与拼接前缀 绑定到src
                     this.base64ImageCode = this.base64ImageCodePrefix + res.data.resultObj;
                 })
+            },
+            // 重置表单
+            resetFields() {
+                this.emailForm = {
+                    email: '',
+                    password: '',
+                    passwordRepeat: ''
+                };
+                this.agree = false;
+            },
+            // 邮箱注册提交
+            emailGet() {
+                if (this.emailForm.email == '') {
+                    alert('邮箱不能为空');
+                    return;
+                }
+                if (this.emailForm.password == '') {
+                    alert('密码不能为空');
+                    return;
+                }
+                if (this.emailForm.passwordRepeat == '') {
+                    alert('确认密码不能为空');
+                    return;
+                }
+                if (this.emailForm.password != this.emailForm.passwordRepeat) {
+                    alert('两次密码不一致');
+                    return;
+                }
+                if (!this.agree) {
+                    alert('请您阅读并勾选同意《服务协议》');
+                    return;
+                }
+                //拷贝后面对象的值到新对象,防止后面代码改动引起模型变化
+                let para = Object.assign({}, this.emailForm); //shop本身这个参数里面就有店铺和管理员信息
+                //为了后台好接收，封装一个对象放到里面
+                this.$http.post("/user/register", para).then((res) => {
+                    if (res.data.success) {
+                        this.$message({
+                            message: '注册成功!',
+                            type: 'success'
+                        });
+                        //重置表单
+                        this.$refs['emailForm'].resetFields();
+                    } else {
+                        this.$message({
+                            message: res.data.msg,
+                            type: 'error'
+                        });
+                    }
+                });
             }
         },
         mounted() {
+            // 自动加载图片验证码
             this.getImageCode();
         }
     })
