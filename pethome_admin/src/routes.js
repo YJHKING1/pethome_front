@@ -69,8 +69,8 @@ let routes = [
         name: '用户管理',
         iconCls: 'el-icon-user-solid',
         children: [
-            {path: '/page4', component: Table, name: '页面4'},
-            {path: '/page5', component: Table, name: '页面5'}
+            {path: '/page4', component: Table, name: '用户'},
+            {path: '/page5', component: Table, name: '登录信息'}
         ]
     },
     {

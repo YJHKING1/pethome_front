@@ -61,7 +61,7 @@
                             </label>
                         </div>
                         <div class="am-cf">
-                            <input type="submit" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl"
+                            <input type="button" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl"
                                    @click="emailGet">
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                         <form method="post">
                             <div class="user-phone">
                                 <label for="phone"><i class="am-icon-mobile-phone am-icon-md"></i></label>
-                                <input type="tel" name="" id="phone" placeholder="请输入手机号">
+                                <input type="tel" name="" id="phone" v-model="phoneUserForm.phone" placeholder="请输入手机号">
                             </div>
                             <div class="user-phone">
                                 <label for="imageCode"><i class="am-icon-check am-icon-sm"></i></label>
@@ -82,25 +82,29 @@
                             </div>
                             <div class="verification">
                                 <label for="code"><i class="am-icon-code-fork"></i></label>
-                                <input type="tel" name="" id="code" placeholder="请输入验证码">
-                                <button type="button" id="dyMobileButton" onclick="sendMobileCode();">获取</button>
+                                <input type="tel" name="" id="code" v-model="phoneUserForm.phoneCode"
+                                       placeholder="请输入验证码">
+                                <button type="button" id="dyMobileButton" @click="sendMobileCode">获取</button>
                             </div>
                             <div class="user-pass">
                                 <label for="password"><i class="am-icon-lock"></i></label>
-                                <input type="password" name="" id="password" placeholder="设置密码">
+                                <input type="password" name="" v-model="phoneUserForm.password" id="password"
+                                       placeholder="设置密码">
                             </div>
                             <div class="user-pass">
                                 <label for="passwordRepeat"><i class="am-icon-lock"></i></label>
-                                <input type="password" name="" id="passwordRepeat" placeholder="确认密码">
+                                <input type="password" name="" v-model="phoneUserForm.passwordRepeat"
+                                       id="passwordRepeat" placeholder="确认密码">
                             </div>
                         </form>
                         <div class="login-links">
                             <label for="reader-me">
-                                <input id="reader-me" type="checkbox"> 点击表示您同意商城《服务协议》
+                                <input id="reader-me" type="checkbox" v-model="agree"> 点击表示您同意商城《服务协议》
                             </label>
                         </div>
                         <div class="am-cf">
-                            <input type="submit" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl">
+                            <input type="button" name="" value="注册" class="am-btn am-btn-primary am-btn-sm am-fl"
+                                   @click="phoneGet">
                         </div>
                         <hr>
                     </div>
@@ -142,19 +146,32 @@
     new Vue({
         el: '#app',
         data: {
-            // 获取图形验证码响应一个base64位的字符串
+            // base64编码之后的图形验证码字符串
             base64ImageCode: '',
+            // base64编码之后的图形验证码前缀
             base64ImageCodePrefix: 'data:image/jpeg;base64,',
             // 同意协议
             agree: false,
             // 手机号注册表单
             phoneUserForm: {
-                imageCode: ''
+                // 图片验证码
+                imageCode: '',
+                // 手机号
+                phone: '',
+                // 手机验证码
+                phoneCode: '',
+                // 密码
+                password: '',
+                // 确认密码
+                passwordRepeat: ''
             },
             // 邮箱注册表单
             emailForm: {
+                // 邮箱
                 email: '',
+                // 密码
                 password: '',
+                // 确认密码
                 passwordRepeat: ''
             }
         },
@@ -188,10 +205,60 @@
                     this.base64ImageCode = this.base64ImageCodePrefix + res.data.resultObj;
                 })
             },
+            // 发送验证码
+            sendMobileCode() {
+                // 判断手机号是否为空
+                if (this.phoneUserForm.phone == '') {
+                    alert('请输入手机号');
+                    return;
+                }
+                // 判断图片验证码是否为空
+                if (this.phoneUserForm.imageCode == '') {
+                    alert('请输入图形验证码');
+                    return;
+                }
+                // 获取按钮，禁用按钮  发送时灰化不能使用，发送成功倒计时60才能使用，如果发送失败立即可以发送
+                var sendBtn = $(event.target);
+                sendBtn.attr("disabled", true);
+                // 请求参数
+                var param = {
+                    phone: this.phoneUserForm.phone,
+                    imageCode: this.phoneUserForm.imageCode,
+                    imageCodeKey: localStorage.getItem("phoneRegisterCodeKey")
+                }
+                // 发送异步请求
+                this.$http.post("/verifyCode/smsCode", param).then((res) => {
+                    if (res.data.success) {
+                        // 倒计时60秒
+                        var count = 60;
+                        var timer = setInterval(() => {
+                            count--;
+                            if (count > 0) {
+                                sendBtn.text(count);
+                            } else {
+                                sendBtn.text("发送");
+                                sendBtn.attr("disabled", false);
+                                // 清空计时器
+                                clearInterval(timer);
+                            }
+                        }, 1000);
+                    } else {
+                        alert(res.data.msg);
+                        sendBtn.attr("disabled", false);
+                    }
+                });
+            },
             // 重置表单
             resetFields() {
                 this.emailForm = {
                     email: '',
+                    password: '',
+                    passwordRepeat: ''
+                };
+                this.phoneUserForm = {
+                    imageCode: '',
+                    phone: '',
+                    phoneCode: '',
                     password: '',
                     passwordRepeat: ''
                 };
@@ -219,20 +286,60 @@
                     alert('请您阅读并勾选同意《服务协议》');
                     return;
                 }
-                //拷贝后面对象的值到新对象,防止后面代码改动引起模型变化
-                let para = Object.assign({}, this.emailForm); //shop本身这个参数里面就有店铺和管理员信息
+                // 拷贝后面对象的值到新对象,防止后面代码改动引起模型变化
+                // shop本身这个参数里面就有店铺和管理员信息
+                let para = Object.assign({}, this.emailForm);
                 //为了后台好接收，封装一个对象放到里面
-                this.$http.post("/user/register", para).then((res) => {
+                this.$http.post("/user/register/email", para).then((res) => {
                     if (res.data.success) {
-                        this.$message({
-                            message: '注册成功!',
-                            type: 'success'
-                        });
-                        //重置表单
-                        this.$refs['emailForm'].resetFields();
+                        location.href = "email_register.html";
                     } else {
-                        this.$message({
-                            message: res.data.msg,
+                        this.$msg({
+                            msg: res.data.msg,
+                            type: 'error'
+                        });
+                    }
+                });
+            },
+            // 手机注册提交
+            phoneGet() {
+                if (this.phoneUserForm.phone == '') {
+                    alert('手机号不能为空');
+                    return;
+                }
+                if (this.phoneUserForm.imageCode == '') {
+                    alert('图形验证码不能为空');
+                    return;
+                }
+                if (this.phoneUserForm.smsCode == '') {
+                    alert('短信验证码不能为空');
+                    return;
+                }
+                if (this.phoneUserForm.password == '') {
+                    alert('密码不能为空');
+                    return;
+                }
+                if (this.phoneUserForm.passwordRepeat == '') {
+                    alert('确认密码不能为空');
+                    return;
+                }
+                if (this.phoneUserForm.password != this.phoneUserForm.passwordRepeat) {
+                    alert('两次密码不一致');
+                    return;
+                }
+                if (!this.agree) {
+                    alert('请您阅读并勾选同意《服务协议》');
+                    return;
+                }
+                // 拷贝后面对象的值到新对象,防止后面代码改动引起模型变化
+                let para = Object.assign({}, this.phoneUserForm);
+                // 发送请求
+                this.$http.post("/user/register/phone", para).then((res) => {
+                    if (res.data.success) {
+                        location.href = "phone_register.html";
+                    } else {
+                        this.$msg({
+                            msg: res.data.msg,
                             type: 'error'
                         });
                     }
