@@ -338,10 +338,7 @@
                     if (res.data.success) {
                         location.href = "phone_register.html";
                     } else {
-                        this.$msg({
-                            msg: res.data.msg,
-                            type: 'error'
-                        });
+                        alert(res.data.msg);
                     }
                 });
             }

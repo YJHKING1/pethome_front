@@ -27,8 +27,9 @@ export default {
         return {
             logining: false,
             ruleForm2: {
-                account: 'admin',
-                checkPass: '123456'
+                account: '',
+                checkPass: '',
+                loginType: 0
             },
             rules2: {
                 account: [
@@ -48,35 +49,48 @@ export default {
             this.$refs.ruleForm2.resetFields();
         },
         handleSubmit2(ev) {
-            var _this = this;
             this.$refs.ruleForm2.validate((valid) => {
                 if (valid) {
-                    //_this.$router.replace('/table');
                     this.logining = true;
-                    //NProgress.start();
-                    var loginParams = {username: this.ruleForm2.account, password: this.ruleForm2.checkPass};
-                    requestLogin(loginParams).then(data => {
+                    this.$http.post("/login/account", this.ruleForm2).then(res => {
                         this.logining = false;
-                        //NProgress.done();
-                        let {msg, code, user} = data;
-                        if (code !== 200) {
+                        if (res.data.success) {
                             this.$message({
-                                message: msg,
+                                message: '登录成功',
+                                type: 'success'
+                            });
+                            let {token, logininfo} = res.data.resultObj;
+                            localStorage.setItem('token', token);
+                            localStorage.setItem('logininfo', JSON.stringify(logininfo));
+                            // 跳转主页
+                            this.$router.push({path: '/echarts'});
+                        } else {
+                            this.$message({
+                                message: res.data.msg,
                                 type: 'error'
                             });
-                        } else {
-                            sessionStorage.setItem('user', JSON.stringify(user));
-                            this.$router.push({path: '/echarts'});
                         }
-                    });
+                    }).catch(res => {
+                        this.$message({
+                            message: "网络繁忙，请稍后再试",
+                            type: 'error'
+                        })
+                    })
                 } else {
-                    console.log('error submit!!');
-                    return false;
+                    this.$message.error("验证失败，请检查输入的信息");
                 }
             });
         },
         goRegister() {
             this.$router.push({path: '/register'});
+        }
+    },
+    mounted() {
+        var logininfo = localStorage.getItem('logininfo');
+        if (logininfo) {
+            let logininfoObj = JSON.parse(logininfo);
+            this.sysUserName = logininfoObj.username || logininfoObj.email || logininfoObj.phone || '';
+            // this.sysUserAvatar = loginInfoObj.avatar || '';//显示管理员头像，表中没有设计
         }
     }
 }

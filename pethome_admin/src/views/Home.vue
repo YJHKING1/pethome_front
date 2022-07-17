@@ -11,9 +11,8 @@
             </el-col>
             <el-col :span="4" class="userinfo">
                 <el-dropdown trigger="hover">
-                    <span class="el-dropdown-link userinfo-inner"><img :src="this.sysUserAvatar"/> {{
-                            sysUserName
-                        }}</span>
+                    <span class="el-dropdown-link userinfo-inner">
+                        {{ sysUserName }}</span>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item>我的消息</el-dropdown-item>
                         <el-dropdown-item>设置</el-dropdown-item>
@@ -121,12 +120,14 @@ export default {
         },
         //退出登录
         logout: function () {
-            var _this = this;
             this.$confirm('确认退出吗?', '提示', {
-                //type: 'warning'
+                type: 'warning'
             }).then(() => {
-                sessionStorage.removeItem('user');
-                _this.$router.push('/login');
+                // 删除浏览器存储的登录信息
+                localStorage.removeItem('logininfo');
+                localStorage.removeItem('token');
+                // 跳转登录页面
+                this.$router.push('/login');
             }).catch(() => {
             });
         },
@@ -135,15 +136,16 @@ export default {
             this.collapsed = !this.collapsed;
         },
         showMenu(i, status) {
-            this.$refs.menuCollapsed.getElementsByClassName('submenu-hook-' + i)[0].style.display = status ? 'block' : 'none';
+            this.$refs.menuCollapsed.getElementsByClassName('submenu-hook-' + i)[0]
+                .style.display = status ? 'block' : 'none';
         }
     },
     mounted() {
-        var user = sessionStorage.getItem('user');
-        if (user) {
-            user = JSON.parse(user);
-            this.sysUserName = user.name || '';
-            this.sysUserAvatar = user.avatar || '';
+        var logininfo = localStorage.getItem('logininfo');
+        if (logininfo) {
+            let logininfoObj = JSON.parse(logininfo);
+            this.sysUserName = logininfoObj.username || logininfoObj.email || logininfoObj.phone || '';
+            // this.sysUserAvatar = loginInfoObj.avatar || '';//显示管理员头像，表中没有设计
         }
     }
 }

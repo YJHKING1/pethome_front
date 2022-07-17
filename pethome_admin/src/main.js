@@ -17,11 +17,44 @@ Vue.prototype.$http = axios
 Vue.use(ElementUI)
 Vue.use(VueRouter)
 Vue.use(Vuex)
-
 const router = new VueRouter({
     routes
 })
-
+// 前置拦截器
+axios.interceptors.request.use(res => {
+    let token = localStorage.getItem("token");
+    if (token) {
+        res.headers["token"] = token;
+    }
+    return res;
+}, error => {
+    Promise.reject(error)
+})
+// 后置拦截器
+axios.interceptors.response.use(res => {
+    //后端响应的是没有登录的信息
+    if (false === res.data.success && "noLogin" === res.data.message) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("logininfo");
+        router.push({path: '/login'});
+    }
+    return res;
+}, error => {
+    Promise.reject(error)
+})
+// 路由拦截器
+router.beforeEach((to, from, next) => {
+    if (to.path == '/login' || to.path == '/register') {
+        next();
+    } else {//访问其他页面 - 判断是否登录过 - logininfo
+        let logininfo = JSON.parse(localStorage.getItem('logininfo'));
+        if (logininfo) {
+            next();
+        } else {//访问的不是登录页面，页不是注册页面。没有登录
+            next({path: '/login'})
+        }
+    }
+})
 new Vue({
     router,
     store,
