@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+
+    <link rel="stylesheet" href="./AmazeUI-2.4.2/assets/css/amazeui.min.css"/>
+    <link href="./css/dlstyle.css" rel="stylesheet" type="text/css">
+    <script src="./AmazeUI-2.4.2/assets/js/jquery.min.js"></script>
+    <script src="./AmazeUI-2.4.2/assets/js/amazeui.min.js"></script>
+
+    <!--script src方式引入vue和axios-->
+    <script src="js/plugins/vue/dist/vue.js"></script>
+    <script src="js/plugins/axios/dist/axios.js"></script>
+    <!--全局配置，以后只要用vue+axios的页面都引入common.js-->
+    <script src="js/common.js"></script>
+
+</head>
+<body>
+<div class="login-boxtitle">
+    <a href="home/demo.html"><img alt="" src="./images/logobig.png"/></a>
+</div>
+
+<div class="res-banner">
+    <div class="res-main">
+        <div class="login-banner-bg"><span></span><img src="./images/big.jpg"/></div>
+        <div class="login-box">
+            <div class="am-tabs" id="doc-my-tabs">
+                <div class="am-tabs-bd">
+                    <div class="am-tab-panel am-active" id="myDiv">
+                        <form method="post">
+                            <div class="user-phone">
+                                <label for="phone"><i class="am-icon-mobile-phone am-icon-md"></i></label>
+                                <input type="tel" name="" id="phone" v-model="phoneUserForm.phone" placeholder="请输入手机号">
+                            </div>
+                            <div class="verification">
+                                <label for="code"><i class="am-icon-code-fork"></i></label>
+                                <input type="tel" name="" id="code" v-model="phoneUserForm.verifyCode"
+                                       placeholder="请输入验证码">
+                                <!--<a class="btn" href="javascript:void(0);" onclick="sendMobileCode();" id="sendMobileCode">-->
+                                <!--<span id="dyMobileButton">获取</span></a>-->
+                                <button type="button" id="dyMobileButton" @click="sendMobileCode">获取</button>
+                            </div>
+                        </form>
+                        <div class="login-links">
+                            <label for="reader-me">
+                                <input id="reader-me" type="checkbox"> 点击表示您同意商城《服务协议》
+                            </label>
+                        </div>
+                        <div class="am-cf">
+                            <input type="button" @click="binder" name="" value="绑定授权"
+                                   class="am-btn am-btn-primary am-btn-sm am-fl">
+                        </div>
+
+                        <hr>
+                    </div>
+
+                    <script>
+                        $(function () {
+                            $('#doc-my-tabs').tabs();
+                        })
+                    </script>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer ">
+        <div class="footer-hd ">
+            <p>
+                <a href="# ">恒望科技</a>
+                <b>|</b>
+                <a href="# ">商城首页</a>
+                <b>|</b>
+                <a href="# ">支付宝</a>
+                <b>|</b>
+                <a href="# ">物流</a>
+            </p>
+        </div>
+        <div class="footer-bd ">
+            <p>
+                <a href="# ">关于恒望</a>
+                <a href="# ">合作伙伴</a>
+                <a href="# ">联系我们</a>
+                <a href="# ">网站地图</a>
+                <em>© 2015-2025 Hengwang.com 版权所有. 更多模板 <a href="http://www.cssmoban.com/" target="_blank" title="模板之家">模板之家</a>
+                    - Collect from <a href="http://www.cssmoban.com/" title="网页模板" target="_blank">网页模板</a></em>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    new Vue({
+        "el": "#myDiv",
+        data: {
+            phoneUserForm: {
+                phone: "",
+                verifyCode: "",
+                accessToken: "",
+                openId: ""
+            }
+        },
+        methods: {
+            binder() {
+                this.$http.post("/login/wechat/binder", this.phoneUserForm).then(result => {
+                    result = result.data;
+                    if (result.success) {
+                        alert("绑定成功！")
+                        //1.保存返回的token，logininfo到localStorage
+                        let {token, logininfo} = result.resultObj;
+                        localStorage.setItem("token", token);
+                        localStorage.setItem("logininfo", JSON.stringify(logininfo));
+                        location.href = "/index.html"; //注册成功后跳转登录页面
+                    } else {
+                        alert(result.message)
+                    }
+                }).catch(result => {
+                    alert("系统错误！");
+                })
+            },
+            sendMobileCode() {
+                //1.判断手机号不为空
+                if (!this.phoneUserForm.phone) {
+                    alert("手机号不能为空");
+                    return;
+                }
+                //2.获取按钮，禁用按钮  发送时灰化不能使用，发送成功倒计时60才能使用，如果发送失败立即可以发送
+                var sendBtn = $(event.target);
+                sendBtn.attr("disabled", true);
+                this.$http.post('/verifyCode/binderSmsCode', {"phone": this.phoneUserForm.phone}).then((res) => {
+                    console.log(res);
+                    var ajaxResult = res.data;
+                    if (ajaxResult.success) {
+                        alert("手机验证码已经发送到您的手机，请在3分钟内使用");
+                        //3.1.发送成：倒计时
+                        var time = 60;
+                        var interval = window.setInterval(function () {
+                            //每一条倒计时减一
+                            time = time - 1;
+                            //把倒计时时间搞到按钮上
+                            sendBtn.html(time);
+                            //3.2.倒计时完成恢复按钮
+                            if (time <= 0) {
+                                sendBtn.html("重发");
+                                sendBtn.attr("disabled", false);
+                                //清除定时器
+                                window.clearInterval(interval);
+                            }
+                        }, 1000);
+                    } else {
+                        //3.3.发送失败：提示，恢复按钮
+                        sendBtn.attr("disabled", false);
+                        alert("发送失败:" + ajaxResult.message);
+                    }
+                });
+            }
+        },
+        mounted() {
+            let paramObj = parseUrlParams2Obj(location.href);
+            if (paramObj) {
+                this.phoneUserForm.accessToken = paramObj.accessToken;
+                this.phoneUserForm.openId = paramObj.openId;
+            }
+        }
+    })
+</script>
+
+</html>
