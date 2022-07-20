@@ -16,6 +16,7 @@ import Systemdictionarydetail from "./views/system/Systemdictionarydetail";
 import Systemdictionarytype from "./views/system/Systemdictionarytype";
 import ShopRegister from "./views/org/ShopRegister";
 import Activation from "./views/Activation";
+import Menu from "./views/system/Menu";
 
 let routes = [
     {
@@ -80,7 +81,8 @@ let routes = [
         iconCls: 'el-icon-s-platform',
         children: [
             {path: '/systemdictionarydetail', component: Systemdictionarydetail, name: '数据字典明细'},
-            {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'}
+            {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'},
+            {path: '/menu', component: Menu, name: '权限菜单'}
         ]
     },
     {
