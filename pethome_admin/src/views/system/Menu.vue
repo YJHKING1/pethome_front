@@ -4,7 +4,7 @@
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
             <el-form :inline="true">
                 <el-form-item>
-                    <el-input v-model="keyword" placeholder="id、名称、类型、类型id"></el-input>
+                    <el-input v-model="keyword" placeholder="名称"></el-input>
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" v-on:click="keywordQuery">查询</el-button>
@@ -15,18 +15,32 @@
             </el-form>
         </el-col>
         <!--列表-->
-        <el-table :data="systemdictionarydetails" highlight-current-row v-loading="listLoading"
+        <el-table :data="menu" highlight-current-row v-loading="listLoading"
                   @selection-change="selsChange"
                   style="width: 100%;">
             <el-table-column type="selection" width="55">
             </el-table-column>
             <el-table-column type="index" label="序号" width="60">
             </el-table-column>
-            <el-table-column prop="id" label="id" width="60" sortable>
+            <el-table-column prop="name" label="名称" width="150" sortable>
             </el-table-column>
-            <el-table-column prop="name" label="名称" width="100" sortable>
+            <el-table-column prop="component" label="组件路径" width="300" sortable>
             </el-table-column>
-            <el-table-column prop="systemdictionarytype.name" label="类型" width="150" sortable>
+            <el-table-column prop="url" label="访问地址" width="180" sortable>
+            </el-table-column>
+            <el-table-column prop="icon" label="图标" width="100" sortable>
+            </el-table-column>
+            <el-table-column prop="index" label="索引" width="100" sortable>
+            </el-table-column>
+            <el-table-column prop="parent.name" label="父级菜单" width="150" sortable>
+            </el-table-column>
+            <el-table-column prop="intro" label="简介" width="100" sortable>
+            </el-table-column>
+            <el-table-column prop="state" label="状态" width="100" sortable>
+                <template scope="scope">
+                    <span v-if="scope.row.state" style="color: green">正常</span>
+                    <span v-else style="color: red">停用</span>
+                </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
@@ -48,13 +62,36 @@
                 <el-form-item prop="name" label="名称">
                     <el-input v-model="saveForm.name"></el-input>
                 </el-form-item>
-                <el-form-item prop="systemdictionarytype" label="类型">
-                    <el-select v-model="saveForm.systemdictionarytype" value-key="id" placeholder="请选择类型" clearable>
-                        <el-option v-for="item in systemdictionarytypes" :label="item.name" :value="item">
-                            <span style="float: left">{{ item.name }}</span>
-                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.sn }}</span>
-                        </el-option>
-                    </el-select>
+                <el-form-item prop="url" label="访问地址">
+                    <el-input v-model="saveForm.url"></el-input>
+                </el-form-item>
+                <el-form-item prop="component" label="组件路径">
+                    <el-input v-model="saveForm.component"></el-input>
+                </el-form-item>
+                <el-form-item prop="intro" label="标识">
+                    <el-input v-model="saveForm.intro"></el-input>
+                </el-form-item>
+                <el-form-item prop="icon" label="图标">
+                    <el-input v-model="saveForm.icon"></el-input>
+                </el-form-item>
+                <el-form-item prop="index" label="排序索引">
+                    <el-input-number v-model="saveForm.index"></el-input-number>
+                </el-form-item>
+                <el-form-item prop="parent" label="上级菜单">
+                    <el-cascader v-model="saveForm.parent"
+                                 :options="menuTree"
+                                 :props="{
+                                     checkStrictly: true,
+                                     label: 'name',
+                                     value: 'id'
+                                 }" clearable>
+                    </el-cascader>
+                </el-form-item>
+                <el-form-item label="状态">
+                    <el-radio-group v-model="saveForm.state">
+                        <el-radio class="radio" :label="true">正常</el-radio>
+                        <el-radio class="radio" :label="false">停用</el-radio>
+                    </el-radio-group>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -72,7 +109,7 @@ export default {
                 name: ''
             },
             // 列表数据
-            systemdictionarydetails: [],
+            data: [],
             // 加载框
             listLoading: false,
             // 总数
@@ -86,25 +123,40 @@ export default {
             title: "",
             // 关键字
             keyword: '',
-            // 字典类型
-            systemdictionarytypes: [],
+            // 菜单分页数据
+            menu: [],
             // 编辑界面是否显示
             saveFormVisible: false,
             saveLoading: false,
+            // 菜单树
+            menuTree: [],
+            // 新增编辑数据验证
             saveFormRules: {
                 name: [
                     {required: true, message: '请输入名称', trigger: 'blur'}
                 ],
-                systemdictionarytype: [
-                    {required: true, message: '请选择分类', trigger: 'blur'}
+                index: [
+                    {required: true, message: '请输入排序索引', trigger: 'blur'}
+                ],
+                url: [
+                    {required: true, message: '请输入访问地址', trigger: 'blur'}
+                ],
+                component: [
+                    {required: true, message: '请输入组件路径', trigger: 'blur'}
                 ]
             },
             //编辑界面数据
             saveForm: {
                 id: null,
                 name: '',
-                typesId: null,
-                systemdictionarytype: null
+                component: '',
+                url: '',
+                icon: '',
+                index: '',
+                parentId: null,
+                intro: '',
+                state: false,
+                parent: null
             }
         }
     },
@@ -112,21 +164,27 @@ export default {
         // 点击页码
         handleCurrentChange(val) {
             this.currentPage = val;
-            this.getSystemdictionarydetails();
+            this.getMenu();
         },
         // 关键字查询
         keywordQuery() {
             this.currentPage = 1;
-            this.getSystemdictionarydetails();
+            this.getMenu();
         },
-        // 获取字典类型
-        getSystemdictionarytypes() {
-            this.$http.get("/systemdictionarytype").then(res => {
-                this.systemdictionarytypes = res.data;
+        // 获取菜单数据
+        getData() {
+            this.$http.get("/menu").then(res => {
+                this.data = res.data;
             });
         },
-        // 获取店铺列表
-        getSystemdictionarydetails() {
+        // 获取菜单树
+        getMenuTree() {
+            this.$http.get("/menu/tree").then(res => {
+                this.menuTree = res.data;
+            });
+        },
+        // 获取菜单数据
+        getMenu() {
             let para = {
                 "currentPage": this.currentPage,
                 "pageSize": this.pageSize,
@@ -134,11 +192,11 @@ export default {
             };
             // 显示盲等框
             this.listLoading = true;
-            this.$http.post("/systemdictionarydetail", para).then(res => {
+            this.$http.post("/menu", para).then(res => {
                 // 赋值总数
                 this.totals = res.data.totals;
                 // 赋值分页
-                this.systemdictionarydetails = res.data.data;
+                this.menu = res.data.data;
                 // 关闭盲等框
                 this.listLoading = false;
             }).catch(res => {
@@ -156,7 +214,7 @@ export default {
                 // 显示等待圈
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.delete("/systemdictionarydetail/" + row.id).
+                this.$http.delete("/menu/" + row.id).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -166,13 +224,14 @@ export default {
                             // 总页数
                             let totalPage = Math.ceil(this.totals / this.pageSize);
                             // 如果当前页为最后一页且当前条数为最后一条且当前页不为第一页
-                            if (this.currentPage == totalPage && (this.totals - 1) % this.pageSize == 0 && this.currentPage != 1) {
+                            if (this.currentPage == totalPage && (this.totals - 1) % this.pageSize == 0
+                                && this.currentPage != 1) {
                                 this.currentPage = this.currentPage - 1;
                             }
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getSystemdictionarydetails();
+                            this.getMenu();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -192,7 +251,11 @@ export default {
             this.title = "编辑";
             // 备份数据
             this.saveForm = Object.assign({}, row);
-            this.getSystemdictionarytypes();
+            this.getData();
+            // 获取菜单树
+            this.getMenuTree();
+            // 将改行的父级id赋值给parent
+            this.saveForm.parent = row.parentId;
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -203,10 +266,18 @@ export default {
             this.saveForm = {
                 id: null,
                 name: '',
-                typesId: null,
-                systemdictionarytype: null
+                component: '',
+                url: '',
+                icon: '',
+                index: '',
+                parentId: null,
+                intro: '',
+                state: false,
+                parent: null
             };
-            this.getSystemdictionarytypes();
+            this.getData();
+            // 获取菜单树
+            this.getMenuTree();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -218,14 +289,21 @@ export default {
                         this.saveLoading = true;
                         // 此为表单中的数据
                         let paras = Object.assign({}, this.saveForm);
-                        paras.typesId = this.saveForm.systemdictionarytype.id;
-                        paras.systemdictionarytype = null;
-                        this.$http.put("/systemdictionarydetail", paras).then(res => {
+                        let arr = paras.parent;
+                        // 将parentId赋值为parent.id
+                        if (arr != null) {
+                            paras.parentId = arr[arr.length - 1];
+                        } else {
+                            paras.parentId = null;
+                        }
+                        // 将parent设为空
+                        paras.parent = null;
+                        this.$http.put("/menu", paras).then(res => {
                             this.saveFormVisible = false;
                             this.saveLoading = false;
                             if (res.data.success) {
                                 this.$message.success(this.title + "成功");
-                                this.getSystemdictionarydetails();
+                                this.getMenu();
                             } else {
                                 this.$message.error("网络繁忙，500");
                             }
@@ -248,7 +326,7 @@ export default {
             }).then(() => {
                 this.listLoading = true;
                 // 发送异步请求
-                this.$http.patch("/systemdictionarydetail", ids).
+                this.$http.patch("/menu", ids).
                     // 请求成功
                     then(res => {
                         // 关闭等待圈
@@ -260,7 +338,7 @@ export default {
                             // 显示信息
                             this.$message.success("删除成功");
                             // 再次查询
-                            this.getSystemdictionarydetails();
+                            this.getMenu();
                             // 返回信息：失败
                         } else {
                             // 显示信息
@@ -276,7 +354,7 @@ export default {
         }
     },
     mounted() {
-        this.getSystemdictionarydetails();
+        this.getMenu();
     }
 }
 </script>
