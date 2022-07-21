@@ -37,7 +37,7 @@
             </el-table-column>
             <el-table-column prop="shop.name" label="店铺" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="state" label="状态" min-width="100" sortable>
+            <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
                     <span v-if="scope.row.state==1" style="color: green">正常</span>
                     <span v-else style="color: red">停用</span>
@@ -86,6 +86,13 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <el-form-item prop="roleId" label="角色">
+                    <el-select v-model="saveForm.roleId" value-key="id" placeholder="请选择角色" clearable>
+                        <el-option v-for="item in roles" :label="item.name" :value="item.id">
+                            <span style="float: left">{{ item.name }}</span>
+                        </el-option>
+                    </el-select>
+                </el-form-item>
                 <el-form-item label="启用状态">
                     <el-radio-group v-model="saveForm.state">
                         <el-radio class="radio" :label="1">正常</el-radio>
@@ -126,6 +133,8 @@ export default {
             shops: [],
             // 关键字
             keyword: '',
+            // 角色
+            roles: [],
             saveFormVisible: false,//编辑界面是否显示
             saveLoading: false,
             saveFormRules: {
@@ -150,7 +159,8 @@ export default {
                 department: null,
                 logininfoId: null,
                 shopId: null,
-                shop: null
+                shop: null,
+                roleId: null
             }
         }
     },
@@ -194,6 +204,12 @@ export default {
                 this.listLoading = false;
             }).catch(res => {
                 this.$message.error("网络繁忙，请稍后再试");
+            });
+        },
+        // 获取角色列表
+        getRules() {
+            this.$http.get("/role").then(res => {
+                this.roles = res.data;
             });
         },
         // 删除点击事件
@@ -245,6 +261,7 @@ export default {
             this.saveForm = Object.assign({}, row);
             this.getDepartments()
             this.getShops();
+            this.getRules();
             // 显示修改对话框
             this.saveFormVisible = true;
         },
@@ -265,10 +282,12 @@ export default {
                 department: null,
                 logininfoId: null,
                 shopId: null,
-                shop: null
+                shop: null,
+                roleId: null
             };
             this.getDepartments()
             this.getShops();
+            this.getRules();
             // 显示修改对话框
             this.saveFormVisible = true;
         },

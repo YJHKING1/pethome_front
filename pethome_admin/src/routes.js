@@ -17,6 +17,7 @@ import Systemdictionarytype from "./views/system/Systemdictionarytype";
 import ShopRegister from "./views/org/ShopRegister";
 import Activation from "./views/Activation";
 import Menu from "./views/system/Menu";
+import Role from "./views/system/Role";
 
 let routes = [
     {
@@ -82,7 +83,9 @@ let routes = [
         children: [
             {path: '/systemdictionarydetail', component: Systemdictionarydetail, name: '数据字典明细'},
             {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'},
-            {path: '/menu', component: Menu, name: '权限菜单'}
+            {path: '/menu', component: Menu, name: '权限菜单'},
+            {path: '/role', component: Role, name: '角色管理'},
+            {path: '/page5', component: Table, name: '权限管理'}
         ]
     },
     {
