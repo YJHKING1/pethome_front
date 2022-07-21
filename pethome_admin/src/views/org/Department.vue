@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column prop="name" label="部门" width="150" sortable>
             </el-table-column>
-            <el-table-column prop="dirPath" label="路径" min-width="300" sortable>
+            <el-table-column prop="dirPath" label="路径" width="300" sortable>
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
@@ -446,7 +446,6 @@ export default {
                     this.$message.error("网络繁忙，400，404");
                 });
             }).catch(() => {
-
             });
         }
     },
@@ -454,9 +453,6 @@ export default {
         this.getDepartments();
     }
 }
-
 </script>
-
 <style scoped>
-
 </style>

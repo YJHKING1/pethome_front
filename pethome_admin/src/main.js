@@ -38,6 +38,11 @@ axios.interceptors.response.use(res => {
         localStorage.removeItem("logininfo");
         router.push({path: '/login'});
     }
+    // 如果没有权限访问，则跳转到首页
+    if (false === res.data.success && "noPermission" === res.data.message) {
+        alert("没有权限");
+        router.push({path: '/'});
+    }
     return res;
 }, error => {
     Promise.reject(error)

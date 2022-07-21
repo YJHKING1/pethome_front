@@ -299,8 +299,16 @@ export default {
                         this.saveLoading = true;
                         // 此为表单中的数据
                         let paras = Object.assign({}, this.saveForm);
-                        paras.shopId = this.saveForm.shopId.id;
-                        paras.departmentId = this.saveForm.departmentId.id;
+                        if (this.saveForm.shopId.id != null) {
+                            paras.shopId = this.saveForm.shopId.id;
+                        } else {
+                            paras.shopId = null;
+                        }
+                        if (this.saveForm.departmentId.id != null) {
+                            paras.departmentId = this.saveForm.departmentId.id;
+                        } else {
+                            paras.departmentId = null;
+                        }
                         paras.department = null;
                         paras.shop = null;
                         this.$http.put("/employee", paras).then(res => {

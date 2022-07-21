@@ -18,6 +18,7 @@ import ShopRegister from "./views/org/ShopRegister";
 import Activation from "./views/Activation";
 import Menu from "./views/system/Menu";
 import Role from "./views/system/Role";
+import Permission from "./views/system/Permission";
 
 let routes = [
     {
@@ -85,7 +86,7 @@ let routes = [
             {path: '/systemdictionarytype', component: Systemdictionarytype, name: '数据字典类型'},
             {path: '/menu', component: Menu, name: '权限菜单'},
             {path: '/role', component: Role, name: '角色管理'},
-            {path: '/page5', component: Table, name: '权限管理'}
+            {path: '/permission', component: Permission, name: '权限管理'}
         ]
     },
     {

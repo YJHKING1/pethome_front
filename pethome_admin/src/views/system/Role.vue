@@ -94,7 +94,7 @@ export default {
             roles: [],
             listLoading: false,
             currentPage: 1,
-            pageSize: 5,
+            pageSize: 10,
             totals: 0,
 
             //高级查询所需数据

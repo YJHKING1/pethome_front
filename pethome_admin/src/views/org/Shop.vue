@@ -56,7 +56,7 @@
                     <img :src="imgPrefix+scope.row.logo" width="50px" alt="">
                 </template>
             </el-table-column>
-            <el-table-column prop="address" label="地址" min-width="200" sortable>
+            <el-table-column prop="address" label="地址" width="200" sortable>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
