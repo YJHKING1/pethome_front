@@ -54,7 +54,7 @@ let routes = [
             {path: '/echarts', component: echarts, name: '主页'}
         ]
     },
-    {
+    /*{
         path: '/',
         component: Home,
         name: '组织机构',
@@ -88,12 +88,11 @@ let routes = [
             {path: '/role', component: Role, name: '角色管理'},
             {path: '/permission', component: Permission, name: '权限管理'}
         ]
-    },
+    },*/
     {
         path: '*',
         hidden: true,
         redirect: {path: '/404'}
     }
 ];
-
 export default routes;

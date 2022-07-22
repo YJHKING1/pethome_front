@@ -69,6 +69,7 @@
                 <el-form-item prop="email" label="电邮">
                     <el-input v-model="saveForm.email"></el-input>
                 </el-form-item>
+                <!--todo 新增密码-->
                 <el-form-item prop="age" label="年纪">
                     <el-input-number v-model="saveForm.age"></el-input-number>
                 </el-form-item>

@@ -49,21 +49,42 @@ export default {
             this.$refs.ruleForm2.resetFields();
         },
         handleSubmit2(ev) {
+            this.login();
+        },
+        goRegister() {
+            this.$router.push({path: '/register'});
+        },
+        login() {
             this.$refs.ruleForm2.validate((valid) => {
                 if (valid) {
+                    // 显示忙等框
                     this.logining = true;
                     this.$http.post("/login/account", this.ruleForm2).then(res => {
+                        // 不管失败和成功：都要去掉忙等框
                         this.logining = false;
                         if (res.data.success) {
+                            //1.显示成功信息
                             this.$message({
-                                message: '登录成功',
+                                message: "登录成功",
                                 type: 'success'
                             });
-                            let {token, logininfo} = res.data.resultObj;
-                            localStorage.setItem('token', token);
-                            localStorage.setItem('logininfo', JSON.stringify(logininfo));
-                            // 跳转主页
+                            //2.将token和logininfo保存到localStrorage中
+                            //解构表达式：快捷获取
+                            let {token, logininfo, menus, permissions} = res.data.resultObj;
+                            // console.log("===============================================");
+                            // console.log(res.data.resultObj);
+                            // console.log(token);
+                            // console.log(logininfo);
+                            localStorage.setItem("token", token);
+                            //注意：保存的是json格式的字符串，那么获取的时候需要进行转换才能使用json对象
+                            //3.跳转到首页
+                            localStorage.setItem("logininfo", JSON.stringify(logininfo));
+                            //拿到的是一个对象，需要转成json格式字符串
+                            localStorage.setItem("menus", JSON.stringify(menus));
+                            localStorage.setItem("permissions", JSON.stringify(permissions));
                             this.$router.push({path: '/echarts'});
+                            // 登录成功之后刷新一下本地的路由缓存
+                            location.reload();
                         } else {
                             this.$message({
                                 message: res.data.msg,
@@ -72,17 +93,15 @@ export default {
                         }
                     }).catch(res => {
                         this.$message({
-                            message: "网络繁忙，请稍后再试",
+                            message: "系统错误",
                             type: 'error'
-                        })
+                        });
                     })
                 } else {
-                    this.$message.error("验证失败，请检查输入的信息");
+                    console.log('验证不通过，提交失败!');
+                    return false;
                 }
             });
-        },
-        goRegister() {
-            this.$router.push({path: '/register'});
         }
     },
     mounted() {
