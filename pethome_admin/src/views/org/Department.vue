@@ -4,13 +4,13 @@
         <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
             <el-form :inline="true">
                 <el-form-item>
-                    <el-input v-model="keyword" placeholder="编号或姓名关键字"></el-input>
+                    <el-input v-model="keyword" placeholder="编号或姓名关键字" v-perm="'department:get'"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" v-on:click="keywordQuery">查询</el-button>
+                    <el-button type="primary" v-on:click="keywordQuery" v-perm="'department:get'">查询</el-button>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="handleAdd">新增</el-button>
+                    <el-button type="primary" @click="handleAdd" v-perm="'department:save'">新增</el-button>
                 </el-form-item>
             </el-form>
         </el-col>
@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column prop="name" label="部门" width="150" sortable>
             </el-table-column>
-            <el-table-column prop="dirPath" label="路径" width="300" sortable>
+            <el-table-column prop="dirPath" label="路径" width="200" sortable>
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
@@ -42,8 +42,12 @@
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
-                    <el-button type="success" size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+                    <el-button type="success" size="small" @click="handleEdit(scope.$index, scope.row)"
+                               v-perm="'department:save'">编辑
+                    </el-button>
+                    <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)"
+                               v-perm="'department:delete'">删除
+                    </el-button>
                 </template>
             </el-table-column>
         </el-table>
