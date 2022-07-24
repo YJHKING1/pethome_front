@@ -13,8 +13,25 @@ import 'font-awesome/css/font-awesome.min.css'
 import '@/common/js/permission'
 //引入axios
 import axios from "axios";
+// 引入富文本
+import {quillEditor} from "vue-quill-editor"; //调用编辑器
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
+import quillConfig from './common/js/quill-config';
 // 请求地址
 axios.defaults.baseURL = "http://localhost:8080";
+// 添加富文本组件
+export default {
+    components: {
+        quillEditor
+    },
+    data() {
+        return {
+            quillOption: quillConfig
+        }
+    }
+}
 Vue.prototype.$http = axios
 Vue.use(ElementUI)
 Vue.use(VueRouter)

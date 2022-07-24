@@ -37,13 +37,13 @@
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
                 <template scope="scope">
-                    <span v-if="scope.row.state" style="color: green">正常</span>
-                    <span v-else style="color: red">停用</span>
+                    <span v-if="scope.row.state" style="color: green">上架</span>
+                    <span v-else style="color: red">下架</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="offsaletime" label="销售时间" width="100" sortable>
+            <el-table-column prop="offsaletime" label="下架时间" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="onsaletime" label="发售时间" width="100" sortable>
+            <el-table-column prop="onsaletime" label="上架时间" width="100" sortable>
             </el-table-column>
             <el-table-column prop="createtime" label="创建时间" width="100" sortable>
             </el-table-column>
@@ -51,7 +51,11 @@
             </el-table-column>
             <el-table-column prop="user.username" label="用户" width="100" sortable>
             </el-table-column>
-            <el-table-column prop="searchMasterMsg.name" label="寻主" width="100" sortable>
+            <el-table-column prop="searchMasterMsgId" label="来源" width="100" sortable>
+                <template scope="scope">
+                    <span style="color: green" v-if="scope.row.searchMasterMsgId">来自寻主</span>
+                    <span style="color: red" v-else>店铺饲养</span>
+                </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template scope="scope">
@@ -63,21 +67,23 @@
         <!--工具条-->
         <el-col :span="24" class="toolbar">
             <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
+            <el-button type="primary" size="small" @click="onsale" :disabled="this.sels.length===0">上架</el-button>
+            <el-button type="primary" size="small" @click="offsale" :disabled="this.sels.length===0">下架</el-button>
             <el-pagination layout="prev, pager, next" @current-change="handleCurrentChange" :current-page="currentPage"
                            :page-size="pageSize" :total="totals" style="float:right;">
             </el-pagination>
         </el-col>
         <!--编辑界面-->
-        <el-dialog :title="title" :visible.sync="saveFormVisible" :close-on-click-modal="false">
+        <el-dialog :title="title" :visible.sync="saveFormVisible" :close-on-click-modal="false" width="80%">
             <el-form :model="saveForm" label-width="80px" :rules="saveFormRules" ref="saveForm">
                 <el-form-item prop="name" label="宠物名">
                     <el-input v-model="saveForm.name"></el-input>
                 </el-form-item>
                 <el-form-item prop="costprice" label="成本">
-                    <el-input v-model="saveForm.costprice"></el-input>
+                    <el-input-number v-model="saveForm.costprice"></el-input-number>
                 </el-form-item>
                 <el-form-item prop="saleprice" label="售价">
-                    <el-input v-model="saveForm.saleprice"></el-input>
+                    <el-input-number v-model="saveForm.saleprice"></el-input-number>
                 </el-form-item>
                 <el-form-item prop="typeId" label="类型">
                     <el-cascader v-model="saveForm.typeId"
@@ -89,23 +95,33 @@
                                  }" clearable>
                     </el-cascader>
                 </el-form-item>
-                <el-form-item prop="resources" label="宠物图片">
+                <el-form-item label="宠物图片" prop="resources">
                     <el-upload class="upload-demo"
-                               action="http://localhost:8080/fastDfs/"
-                               :on-preview="handlePreview"
+                               action="http://localhost:8080/fastDfs"
                                :on-remove="handleRemove"
                                :on-success="handleSuccess"
                                :file-list="fileList"
                                list-type="picture">
                         <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                     </el-upload>
                 </el-form-item>
-                <el-form-item label="状态">
-                    <el-radio-group v-model="saveForm.state">
-                        <el-radio class="radio" :label="1">正常</el-radio>
-                        <el-radio class="radio" :label="0">停用</el-radio>
-                    </el-radio-group>
+                <el-form-item label="简介" prop="intro">
+                    <!-- v-if="saveForm.petDetail" 修改v-model绑定对象报错问题，v-if对需要显示的数据判断下 -->
+                    <quill-editor v-model="saveForm.petDetail.intro" v-if="saveForm.petDetail" :options="quillOption">
+                    </quill-editor>
                 </el-form-item>
+                <el-form-item label="领养须知" prop="orderNotice">
+                    <quill-editor v-model="saveForm.petDetail.adoptnotice" v-if="saveForm.petDetail"
+                                  :options="quillOption">
+                    </quill-editor>
+                </el-form-item>
+                <!--<el-form-item label="状态">
+                    <el-radio-group v-model="saveForm.state">
+                        <el-radio class="radio" :label="1">上架</el-radio>
+                        <el-radio class="radio" :label="0">下架</el-radio>
+                    </el-radio-group>
+                </el-form-item>-->
                 <el-form-item prop="shop" label="店铺">
                     <el-select v-model="saveForm.shop" value-key="id" placeholder="请选择店铺" clearable>
                         <el-option v-for="item in shops" :label="item.name" :value="item">
@@ -136,12 +152,24 @@
     </section>
 </template>
 <script>
+// 引入富文本
+import {quillEditor} from "vue-quill-editor"; //调用编辑器
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
+import quillConfig from '../../common/js/quill-config';
+
 export default {
+    components: {
+        quillEditor
+    },
     data() {
         return {
             filters: {
                 name: ''
             },
+            // 富文本
+            quillOption: quillConfig,
             // 列表数据
             data: [],
             //文件上传相关数据
@@ -173,18 +201,24 @@ export default {
             imgPrefix: 'http://123.207.27.208',
             // 新增编辑数据验证
             saveFormRules: {
-                /*name: [
-                    {required: true, message: '请输入名称', trigger: 'blur'}
+                name: [
+                    {required: true, message: '请输入宠物名称', trigger: 'blur'}
                 ],
-                index: [
-                    {required: true, message: '请输入排序索引', trigger: 'blur'}
+                costprice: [
+                    {required: true, message: '请输入成本价', trigger: 'blur'}
                 ],
-                url: [
-                    {required: true, message: '请输入访问地址', trigger: 'blur'}
+                saleprice: [
+                    {required: true, message: '请输入销售价', trigger: 'blur'}
                 ],
-                component: [
-                    {required: true, message: '请输入组件路径', trigger: 'blur'}
-                ]*/
+                shop: [
+                    {required: true, message: '请选择所在店铺', trigger: 'blur'}
+                ],
+                typeId: [
+                    {required: true, message: '请选择宠物类型', trigger: 'blur'}
+                ],
+                user: [
+                    {required: true, message: '请选择用户', trigger: 'blur'}
+                ]
             },
             //编辑界面数据
             saveForm: {
@@ -204,7 +238,11 @@ export default {
                 userId: null,
                 user: null,
                 searchMasterMsgId: null,
-                searchMasterMsg: null
+                searchMasterMsg: null,
+                petDetail: {
+                    intro: '',
+                    adoptnotice: ''
+                }
             }
         }
     },
@@ -229,27 +267,61 @@ export default {
         handlePreview(file) {
             console.log(file);
         },
-        // 文件上传的业务逻辑
+        //1.资源图片上传成功之后的处理
         handleSuccess(response, file, fileList) {
-            this.saveForm.resources = response.resultObj;
+            //处理resources - 数据库操作
+            if (this.saveForm.resources) { //有值  /group1/M00/00/72/rBEAA2BHkmaAbEOhAAEUusLjqqk505.png
+                this.saveForm.resources = this.saveForm.resources + "," + response.resultObj;
+            } else {
+                this.saveForm.resources = response.resultObj;
+            }
+            //处理fileList - 页面回显的
+            this.fileList = [];//清空
+            if (this.saveForm.resources) {
+                // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
+                var resourcesArr = this.saveForm.resources.split(",");
+                for (var i = 0; i < resourcesArr.length; i++) {
+                    this.fileList.push({url: "http://123.207.27.208" + resourcesArr[i]})
+                }
+            }
         },
-        // 文件删除的业务逻辑
+        //2.资源图片点击删除时的处理
         handleRemove(file, fileList) {
-            console.log(file);
-            var filePath = file.response.resultObj;
-            this.$http.delete("/fastDfs?path=" + filePath).then(res => {
+            //删除fastDfs上的图片
+            var filePath = file.url; // http://123.207.27.208/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
+            //删除接口需要：/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
+            var path = filePath.substring(filePath.indexOf("/group")); // /group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
+            this.$http.delete("/fastDfs/?path=" + path).then(res => {
                 if (res.data.success) {
-                    this.$message({
-                        message: '删除成功!',
-                        type: 'success'
-                    });
+                    this.$message.success('删除成功!!!');
                 } else {
-                    this.$message({
-                        message: '删除失败!',
-                        type: 'error'
-                    });
+                    this.$message.error('删除失败!!!');
                 }
             })
+            // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
+            //处理resources - 数据库操作
+            if (this.saveForm.resources) {
+                //["/group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg","/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg"]
+                var pathArr = this.saveForm.resources.split(",");
+                for (var i = 0; i < pathArr.length; i++) {
+                    var pathTemp = pathArr[i];
+                    if (pathTemp == path) { //你要删除的图片找到了
+                        //从下标为i的地方开始删除，删1个
+                        pathArr.splice(i, 1);
+                        break;
+                    }
+                }
+                this.saveForm.resources = pathArr.join(",");
+            }
+            //处理fileList - 页面回显的
+            this.fileList = [];//清空
+            if (this.saveForm.resources) {
+                // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
+                var resourcesArr = this.saveForm.resources.split(",");
+                for (var i = 0; i < resourcesArr.length; i++) {
+                    this.fileList.push({url: "http://123.207.27.208" + resourcesArr[i]})
+                }
+            }
         },
         getShops() {
             this.$http.get("/shop").then(res => {
@@ -302,6 +374,76 @@ export default {
             if (this.saveForm.searchMasterMsg) {
                 this.saveForm.searchMasterMsg = this.saveForm.searchMasterMsg.name;
             }
+        },
+        //上架
+        onsale() {
+            var ids = this.sels.map(item => item.id);
+            //获取选中的行
+            if (!this.sels || this.sels.length < 1) {
+                this.$message({message: '老铁，你不选中数据，臣妾上架不了啊....', type: 'error'});
+                return;
+            }
+            this.$confirm('确认上架选中记录吗？', '提示', {
+                type: 'warning'
+            }).then(() => {
+                this.listLoading = true;
+                this.$http.post('/pet/onsale', ids).then((res) => {
+                    this.listLoading = false;
+                    if (res.data.success) {
+                        this.$message({
+                            message: '上架成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: res.data.msg,
+                            type: 'error'
+                        });
+                    }
+                    this.getTableData();
+                }).catch(res => {
+                    this.$message({
+                        message: "系统错误，请稍后重试!!!",
+                        type: 'error'
+                    });
+                })
+            }).catch(() => {
+            });
+        },
+        //下架
+        offsale() {
+            var ids = this.sels.map(item => item.id);
+            //获取选中的行
+            if (!this.sels || this.sels.length < 1) {
+                this.$message({message: '老铁，你不选中数据，臣妾下架不了啊....', type: 'error'});
+                return;
+            }
+            this.$confirm('确认下架选中记录吗？', '提示', {
+                type: 'warning'
+            }).then(() => {
+                this.listLoading = true;
+                this.$http.post('/pet/offsale', ids).then((res) => {
+                    this.listLoading = false;
+                    if (res.data.success) {
+                        this.$message({
+                            message: '下架成功',
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            message: res.data.msg,
+                            type: 'error'
+                        });
+                    }
+                    this.getTableData();
+                }).catch(res => {
+                    this.$message({
+                        message: "系统错误，请稍后重试!!!",
+                        type: 'error'
+                    });
+                })
+            }).catch(() => {
+            });
         },
         // 删除点击事件
         handleDel: function (index, row) {
@@ -357,6 +499,14 @@ export default {
             this.getSearchMasterMsgs();
             // 获取菜单树
             this.getTypeTree();
+            //图片回显
+            this.fileList = [];
+            if (this.saveForm.resources) {//有值
+                let arr = this.saveForm.resources.split(",");
+                for (var i = 0; i < arr.length; i++) {
+                    this.fileList.push({"url": "http://123.207.27.208" + arr[i]});
+                }
+            }
             // 将改行的父级id赋值给parent
             this.saveForm.parent = row.parentId;
             // 回显
@@ -385,8 +535,14 @@ export default {
                 userId: null,
                 user: null,
                 searchMasterMsgId: null,
-                searchMasterMsg: null
+                searchMasterMsg: null,
+                petDetail: {
+                    intro: '',
+                    adoptnotice: ''
+                }
             };
+            //清空图片列表
+            this.fileList = [];
             this.getData();
             this.getShops();
             this.getUsers();
@@ -410,9 +566,17 @@ export default {
                         } else {
                             paras.typeId = null;
                         }
-                        paras.shopId = paras.shop.id;
-                        paras.userId = paras.user.id;
-                        paras.searchMasterMsgId = paras.searchMasterMsg.id;
+                        if (paras.shop) {
+                            paras.shopId = paras.shop.id;
+                        }
+                        if (paras.user) {
+                            paras.userId = paras.user.id;
+                        }
+                        if (paras.searchMasterMsg) {
+                            paras.searchMasterMsgId = paras.searchMasterMsg.id;
+                        } else {
+                            paras.searchMasterMsgId = null;
+                        }
                         paras.shop = null;
                         paras.user = null;
                         paras.searchMasterMsg = null;
