@@ -32,7 +32,12 @@
             </el-table-column>
             <el-table-column prop="resources" label="宠物图片" width="100" sortable>
                 <template scope="scope">
-                    <img :src="imgPrefix+scope.row.resources" width="50px" alt="">
+                    <!--如果仅有一张图片时直接展示-->
+                    <img :src="imgPrefix+scope.row.resources" width="50px" alt=""
+                         v-if="!scope.row.resources.includes(',')">
+                    <!--如果有多张图片时展示第一张-->
+                    <img :src="imgPrefix+scope.row.resources.split(',')[0]" width="50px" alt=""
+                         v-else-if="scope.row.resources.includes(',')">
                 </template>
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
