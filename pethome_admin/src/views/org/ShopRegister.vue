@@ -31,7 +31,7 @@
             </el-form-item>
             <el-form-item prop="address" label="店铺地址">
                 <el-input type="text" v-model="shop.address" auto-complete="off" placeholder="请输入地址！"></el-input>
-                <!--<el-button size="small" type="primary" @click="selectAdrress">选择</el-button>-->
+                <el-button size="small" type="primary" @click="selectAdrress">选择</el-button>
             </el-form-item>
             <el-form-item prop="logo" label="店铺Logo">
                 <!--
@@ -58,10 +58,12 @@
                           placeholder="请输入账号！"></el-input>
             </el-form-item>
             <el-form-item prop="employee.phone" label="手机号码">
-                <el-input type="text" v-model="shop.employee.phone" auto-complete="off" placeholder="请输入电话！"></el-input>
+                <el-input type="text" v-model="shop.employee.phone" auto-complete="off"
+                          placeholder="请输入电话！"></el-input>
             </el-form-item>
             <el-form-item prop="employee.email" label="电子邮件">
-                <el-input type="text" v-model="shop.employee.email" auto-complete="off" placeholder="请输入邮件！"></el-input>
+                <el-input type="text" v-model="shop.employee.email" auto-complete="off"
+                          placeholder="请输入邮件！"></el-input>
             </el-form-item>
             <el-form-item prop="employee.password" label="密码">
                 <el-input type="password" v-model="shop.employee.password" auto-complete="off"
@@ -76,27 +78,27 @@
             </el-form-item>
         </el-form>
         <!--百度地图-->
-        <!--<el-dialog
+        <el-dialog
             title="选择地址"
             :visible.sync="dialogVisable"
             width="30%">
-          <baidu-map :center="{lng: 104.06, lat: 30.67}" :zoom="11">
-            <bm-view class="map"></bm-view>
-            <bm-control :offset="{width: '10px', height: '10px'}">
-              <bm-auto-complete v-model="keyword" :sugStyle="{zIndex: 2100}">
-                <div style="margin-bottom:10px">
-                  <input id="searchInput" type="text" placeholder="请输入关键字" class="searchinput"/>
-                  <el-button type="success" @click="selectAddressConfirm">确定</el-button>
-                </div>
-              </bm-auto-complete>
-            </bm-control>
-            <bm-local-search :keyword="keyword" :auto-viewport="true" ></bm-local-search>
-          </baidu-map>
-          <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogVisable=false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisable=false">确 定</el-button>
+            <baidu-map :center="{lng: 104.06, lat: 30.67}" :zoom="11">
+                <bm-view class="map"></bm-view>
+                <bm-control :offset="{width: '10px', height: '10px'}">
+                    <bm-auto-complete v-model="keyword" :sugStyle="{zIndex: 2100}">
+                        <div style="margin-bottom:10px">
+                            <input id="searchInput" type="text" placeholder="请输入关键字" class="searchinput"/>
+                            <el-button type="success" @click="selectAddressConfirm">确定</el-button>
+                        </div>
+                    </bm-auto-complete>
+                </bm-control>
+                <bm-local-search :keyword="keyword" :auto-viewport="true"></bm-local-search>
+            </baidu-map>
+            <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisable=false">关 闭</el-button>
+                <!--<el-button type="primary" @click="dialogVisable=false">确 定</el-button>-->
           </span>
-        </el-dialog>-->
+        </el-dialog>
     </div>
 </template>
 

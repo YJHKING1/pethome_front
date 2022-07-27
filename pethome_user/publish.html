@@ -1,0 +1,356 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, pet-scalable=0">
+
+    <title>发布寻主信息</title>
+
+    <link href="./AmazeUI-2.4.2/assets/css/admin.css" rel="stylesheet" type="text/css">
+    <link href="./AmazeUI-2.4.2/assets/css/amazeui.css" rel="stylesheet" type="text/css">
+
+    <link href="./css/personal.css" rel="stylesheet" type="text/css">
+    <link href="./css/infstyle.css" rel="stylesheet" type="text/css">
+    <script src="./AmazeUI-2.4.2/assets/js/jquery.min.js"></script>
+    <script src="./AmazeUI-2.4.2/assets/js/amazeui.js"></script>
+    <!-- 引入百度地图 -->
+    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=LSNHTIDvIKtkv7UgAUKfStSz4QU74osS"></script>
+
+    <!-- 引入vue和axios -->
+    <script src="./js/plugins/vue/dist/vue.js"></script>
+    <script src="./js/plugins/axios/dist/axios.js"></script>
+    <!-- axios全局配置 -->
+    <script src="./js/common.js"></script>
+</head>
+
+<body>
+<div id="myDiv">
+    <!--头 -->
+    <header>
+        <article>
+            <div class="mt-logo">
+                <!--顶部导航条 -->
+                <div class="am-container header">
+                    <ul class="message-l">
+                        <div class="topMessage">
+                            <div class="menu-hd" v-if="logininfo">
+                                欢迎【{{logininfo.username || logininfo.phone || logininfo.email}}】登录成功
+                            </div>
+                            <div class="menu-hd" v-else>
+                                <a href="#" target="_top" class="h">亲，请登录</a>
+                                <a href="register.html" target="_blank">免费注册</a>
+                            </div>
+                        </div>
+                    </ul>
+                    <ul class="message-r">
+                        <div class="topMessage home">
+                            <div class="menu-hd"><a href="#" target="_top" class="h">商城首页</a></div>
+                        </div>
+                        <div class="topMessage my-shangcheng">
+                            <div class="menu-hd MyShangcheng"><a href="#" target="_top"><i
+                                    class="am-icon-pet am-icon-fw"></i>个人中心</a></div>
+                        </div>
+                        <div class="topMessage mini-cart">
+                            <div class="menu-hd"><a id="mc-menu-hd" href="#" target="_top"><i
+                                    class="am-icon-shopping-cart  am-icon-fw"></i><span>购物车</span><strong
+                                    id="J_MiniCartNum" class="h">0</strong></a></div>
+                        </div>
+                        <div class="topMessage favorite">
+                            <div class="menu-hd"><a href="#" target="_top"><i
+                                    class="am-icon-heart am-icon-fw"></i><span>收藏夹</span></a></div>
+                        </div>
+                    </ul>
+                </div>
+                <!--悬浮搜索框-->
+
+                <div class="nav white">
+                    <div class="logoBig">
+                        <li><img src="./images/logobig.png"/></li>
+                    </div>
+
+                    <div class="search-bar pr">
+                        <a name="index_none_header_sysc" href="#"></a>
+                        <form>
+                            <input id="searchInput" name="index_none_header_sysc" type="text" placeholder="搜索"
+                                   autocomplete="off">
+                            <input id="ai-topsearch" class="submit am-btn" value="搜索" index="1" type="submit">
+                        </form>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </article>
+    </header>
+    <div class="nav-table">
+        <div class="long-title"><span class="all-goods">全部分类</span></div>
+        <div class="nav-cont">
+            <ul>
+                <li class="index"><a href="index.html" target="_blank">商城</a></li>
+                <li class="qc"><a href="product.html" target="_blank">服务</a></li>
+                <li class="qc"><a href="product.html" target="_blank">领养</a></li>
+                <li class="qc"><a href="https://baike.baidu.com/item/%E5%AE%A0%E7%89%A9/229020" target="_blank">百科</a>
+                </li>
+                <li class="qc"><a href="aboutUs.html" target="_blank">关于我们</a></li>
+                <li class="qc last"><a href="aboutUs.html" target="_blank">加入我们</a></li>
+            </ul>
+            <!--<div class="nav-extra">-->
+            <!--<i class="am-icon-pet-secret am-icon-md nav-pet"></i><b></b>我的福利-->
+            <!--<i class="am-icon-angle-right" style="padding-left: 10px;"></i>-->
+            <!--</div>-->
+        </div>
+    </div>
+    <b class="line"></b>
+    <div class="center">
+        <div class="col-main">
+            <div class="main-wrap">
+
+                <div class="pet-info">
+                    <!--个人信息 -->
+                    <div class="info-main">
+                        <form class="am-form am-form-horizontal" v-model="searchMasterMsg">
+                            <div class="am-form-group">
+                                <label for="pet-title" class="am-form-label">标题</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.title" id="pet-title"
+                                           placeholder="title">
+                                </div>
+                            </div>
+
+                            <div class="am-form-group">
+                                <label for="pet-name" class="am-form-label">昵称</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.name" id="pet-name" placeholder="name">
+
+                                </div>
+                            </div>
+
+                            <div class="am-form-group">
+                                <label class="am-form-label">性别</label>
+                                <div class="am-form-content sex">
+                                    <label class="am-radio-inline">
+                                        <input checked="checked" v-model="searchMasterMsg.gender" type="radio"
+                                               name="radio10"
+                                               value="1" data-am-ucheck> 公
+                                    </label>
+                                    <label class="am-radio-inline">
+                                        <input type="radio" v-model="searchMasterMsg.gender" name="radio10" value="0"
+                                               data-am-ucheck> 母
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="am-form-group">
+                                <label for="pet-age" class="am-form-label">年龄</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.age" id="pet-age" placeholder="age">
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="pet-price" class="am-form-label">价格</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.price" id="pet-price"
+                                           placeholder="price">
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="pet-coat_color" class="am-form-label">毛色</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.coatColor" id="pet-coat_color"
+                                           placeholder="coat_color">
+                                </div>
+                            </div>
+
+
+                            <div class="am-form-group">
+                                <label for="pet-type" class="am-form-label">品种</label>
+                                <div class="am-form-content">
+                                    <input type="text" v-model="searchMasterMsg.petType" id="pet-type"
+                                           placeholder="type">
+                                </div>
+                            </div>
+                            <!--private String resources;-->
+                            <div class="am-form-group am-form-file">
+                                <label class="am-form-label">图片</label>
+                                <div class="am-form-content">
+                                    <button type="button" class="am-btn am-btn-danger am-btn-sm">
+                                        <i class="am-icon-cloud-upload"></i> 选择要上传的文件
+                                    </button>
+                                    <input id="doc-form-file" type="file" multiple>
+                                </div>
+                            </div>
+                            <div id="file-list"></div>
+                            <!--private String address;-->
+                            <div class="am-form-group">
+                                <label for="suggestId" class="am-form-label">地址</label>
+                                <div class="am-form-content">
+                                    <input type="text" id="suggestId" v-model="searchMasterMsg.address"
+                                           placeholder="请输入地址">
+                                </div>
+                            </div>
+
+                            <div class="info-btn">
+                                <div class="am-btn am-btn-danger" @click="publish">发布</div>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+            <!--底部-->
+            <div class="footer">
+                <div class="footer-hd">
+                    <p>
+                        <a href="#">恒望科技</a>
+                        <b>|</b>
+                        <a href="#">商城首页</a>
+                        <b>|</b>
+                        <a href="#">支付宝</a>
+                        <b>|</b>
+                        <a href="#">物流</a>
+                    </p>
+                </div>
+                <div class="footer-bd">
+                    <p>
+                        <a href="#">关于恒望</a>
+                        <a href="#">合作伙伴</a>
+                        <a href="#">联系我们</a>
+                        <a href="#">网站地图</a>
+                        <em>© 2015-2025 Hengwang.com 版权所有. 更多模板 <a href="http://www.cssmoban.com/"
+                                                                           target="_blank"
+                                                                           title="模板之家">模板之家</a> - Collect from
+                            <a
+                                    href="http://www.cssmoban.com/" title="网页模板" target="_blank">网页模板</a></em>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#doc-form-file').on('change', function () {
+            var fileNames = '';
+            $.each(this.files, function () {
+                fileNames += '<span class="am-badge">' + this.name + '</span> ';
+            });
+            $('#file-list').html(fileNames);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    var vue = new Vue({
+        el: "#myDiv",
+        data() {
+            return {
+                modalAdress: '',
+                logininfo: null,
+                searchMasterMsg: {
+                    name: null,
+                    price: 0,
+                    age: 0,
+                    gender: 1,
+                    coat_color: null,
+                    resources: null,
+                    pet_type: 1,
+                    address: null,
+                    title: null
+                }
+            }
+        },
+        methods: {
+            publish() {
+                //string - boolean不行  那就string - int - boolean就可以了 1==true，0==false
+                if (this.searchMasterMsg.gender) {
+                    this.searchMasterMsg.gender = parseInt(this.searchMasterMsg.gender);
+                }
+                this.$http.post("/searchMasterMsg/publish", this.searchMasterMsg)
+                    .then(result => {
+                        //发布成功后就跳转到主页
+                        result = result.data;
+                        if (result.success) {
+                            alert("发布成功！");
+                            location.href = "/index.html";
+                        } else {
+                            alert(result.msg);
+                        }
+                    }).catch(res => {
+                    alert("系统错误");
+                })
+            }
+        },
+        mounted() {
+            let logininfo = localStorage.getItem("logininfo");
+            if (logininfo) {
+                this.logininfo = JSON.parse(logininfo);
+            }
+        }
+
+    });
+</script>
+<script type="text/javascript">
+    // 百度地图API功能
+    function G(id) {
+        return document.getElementById(id);
+    }
+
+    var map = new BMap.Map(""); //没有1-map就删除掉，但是必须传递一个值，空字符串都行
+    //map.centerAndZoom("北京",12);                   // 初始化地图,设置城市和地图级别。
+
+    var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
+        {
+            "input": "suggestId"
+            , "location": map
+        });
+
+    ac.addEventListener("onhighlight", function (e) {  //鼠标放在下拉列表上的事件
+        var str = "";
+        var _value = e.fromitem.value;
+        var value = "";
+        if (e.fromitem.index > -1) {
+            value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        }
+        str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
+
+        value = "";
+        if (e.toitem.index > -1) {
+            _value = e.toitem.value;
+            value = _value.province + _value.city + _value.district + _value.street + _value.business;
+        }
+        str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
+        //G("searchResultPanel").innerHTML = str;
+    });
+
+    var myValue;
+    ac.addEventListener("onconfirm", function (e) {    //鼠标点击下拉列表后的事件
+        var _value = e.item.value;
+        myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
+        //G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
+        //将百度地图的地址赋值给 数据模型
+        vue.searchMasterMsg.address = myValue;
+        setPlace();
+    });
+
+    function setPlace() {
+        map.clearOverlays();    //清除地图上所有覆盖物
+        function myFun() {
+            var pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
+            map.centerAndZoom(pp, 18);
+            map.addOverlay(new BMap.Marker(pp));    //添加标注
+        }
+
+        var local = new BMap.LocalSearch(map, { //智能搜索
+            onSearchComplete: myFun
+        });
+        local.search(myValue);
+    }
+</script>
+
+
+</body>
+
+</html>
