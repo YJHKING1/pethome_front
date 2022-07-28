@@ -17,7 +17,7 @@
         <!--列表-->
         <el-table :data="tableData" highlight-current-row v-loading="listLoading"
                   @selection-change="selsChange"
-                  style="width: 100%;">
+                  style="width: 100%;" @cell-click="maxImg">
             <el-table-column type="selection" width="55">
             </el-table-column>
             <el-table-column type="index" label="序号" width="60">
@@ -33,11 +33,11 @@
             <el-table-column prop="resources" label="宠物图片" width="100" sortable>
                 <template scope="scope">
                     <!--如果仅有一张图片时直接展示-->
-                    <img :src="imgPrefix+scope.row.resources" width="50px" alt=""
-                         v-if="!scope.row.resources.includes(',')">
+                    <el-image :src="imgPrefix+scope.row.resources" width="50px" alt=""
+                              v-if="!scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
                     <!--如果有多张图片时展示第一张-->
-                    <img :src="imgPrefix+scope.row.resources.split(',')[0]" width="50px" alt=""
-                         v-else-if="scope.row.resources.includes(',')">
+                    <el-image :src="imgPrefix+scope.row.resources.split(',')[0]" width="50px" alt=""
+                              v-else-if="scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
                 </template>
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
@@ -204,6 +204,8 @@ export default {
             searchMasterMsgs: [],
             // 图片前缀
             imgPrefix: 'http://123.207.27.208',
+            // 大图
+            srcList: [],
             // 新增编辑数据验证
             saveFormRules: {
                 name: [
@@ -271,6 +273,20 @@ export default {
         //图片预览
         handlePreview(file) {
             console.log(file);
+        },
+        // 点击图片时的图片预览列表
+        maxImg(row, column) {
+            if (column.property == "resources") {
+                if (!row.resources.includes(',')) {
+                    this.srcList = [this.imgPrefix + row.resources];
+                    this.listLoading = false;
+                } else if (row.resources.includes(',')) {
+                    let imgURL = row.resources.split(',');
+                    for (let img of imgURL) {
+                        this.srcList.push(this.imgPrefix + img);
+                    }
+                }
+            }
         },
         //1.资源图片上传成功之后的处理
         handleSuccess(response, file, fileList) {
