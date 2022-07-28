@@ -175,13 +175,13 @@
                         </div>
                         <div class="clear"></div>
                         <ul class="am-avg-sm-2 am-avg-md-3 am-avg-lg-4 boxes">
-                            <li v-for="pet in pets" @click="goDetail(pet.id)">
+                            <li v-for="product in products" @click="goDetail(product.id)">
                                 <div class="i-pic limit">
-                                    <img :src="imgPrefix+pet.resources.split(',')[0]"/>
-                                    <p class="title fl">【{{pet.shop.name}}】{{pet.name}}</p>
+                                    <img :src="imgPrefix+product.resources.split(',')[0]"/>
+                                    <p class="title fl">{{product.name}}</p>
                                     <p class="price fl">
                                         <b>¥</b>
-                                        <strong>{{pet.saleprice}}</strong>
+                                        <strong>{{product.saleprice}}</strong>
                                     </p>
                                     <!--宠物只有一个无销量-->
                                     <!--<p class="number fl">销量<span>1110</span></p>-->
@@ -474,7 +474,7 @@
                 pageSize: 12,
                 state: 1 //前台系统只查询上架的宠物
             },
-            pets: [],
+            products: [],
             totals: 0
         },
         computed: {
@@ -489,8 +489,8 @@
                 location.href = "login.html";
             },
             getPets() {
-                this.$http.post("/pet", this.searchForm).then(res => {
-                    this.pets = res.data.data;
+                this.$http.post("/product", this.searchForm).then(res => {
+                    this.products = res.data.data;
                     this.totals = res.data.totals;
                 })
             },
@@ -519,7 +519,7 @@
             // 点击详情页
             goDetail(id) {
                 //新窗口中打开
-                window.open("petDetail.html?petId=" + id);
+                window.open("productDetail.html?petId=" + id);
             },
         },
         mounted() {

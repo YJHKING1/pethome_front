@@ -78,7 +78,6 @@
                     <li class="qc"><a href="product.html">服务</a></li>
                     <li class="qc"><a href="#">宠物百科</a></li>
                     <li class="qc"><a href="aboutUs.html" target="_blank">关于我们</a></li>
-                    <li class="qc last"><a href="javascript:;" @click="goShop()">{{pet.shop.name}}</a></li>
                 </ul>
                 <div class="nav-extra">
                     <i class="am-icon-user-secret am-icon-md nav-user"></i><b></b>我的福利
@@ -143,7 +142,7 @@
         <div class="clearfixRight">
             <div class="tb-detail-hd">
                 <h1>
-                    【{{pet.shop.name}}】{{pet.name}}
+                    {{product.name}}
                 </h1>
             </div>
             <div class="tb-detail-list">
@@ -151,11 +150,11 @@
                 <div class="tb-detail-price">
                     <li class="price iteminfo_price">
                         <dt>促销价</dt>
-                        <dd><em>¥</em><b class="sys_item_price">{{pet.saleprice}}</b></dd>
+                        <dd><em>¥</em><b class="sys_item_price">{{product.saleprice}}</b></dd>
                     </li>
                     <li class="price iteminfo_mktprice">
                         <dt>原价</dt>
-                        <dd><em>¥</em><b class="sys_item_mktprice">{{pet.saleprice * 1.5}}</b></dd>
+                        <dd><em>¥</em><b class="sys_item_mktprice">{{product.saleprice * 1.5}}</b></dd>
                     </li>
                     <div class="clear"></div>
                 </div>
@@ -422,7 +421,7 @@
                             <div class="attr-list-hd tm-clear">
                                 <h4>简介：</h4></div>
                             <div class="clear"></div>
-                            <div v-html="pet.petDetail.intro"></div>
+                            <div v-html="product.productDetail.intro"></div>
                             <div class="clear"></div>
                         </div>
                         <div class="details">
@@ -430,7 +429,7 @@
                                 <h4>领养须知</h4>
                             </div>
                             <div class="twlistNews">
-                                <div v-html="pet.petDetail.adoptNotice"></div>
+                                <div v-html="product.productDetail.ordernotice"></div>
                             </div>
                         </div>
                         <div class="clear"></div>
@@ -1297,30 +1296,26 @@
             //图片的后缀
             midimgSuffix: "_350x350",
             smallimgSuffix: "_60x60",
-            pet: {
-                shop: {},
-                petDetail: {}
+            product: {
+                productDetail: {}
             },
             resources: [], //数组
             logininfo: null
         },
         methods: {
             getPetDetail(id) {
-                this.$http.get("/pet/" + id).then(result => {
+                this.$http.get("/product/" + id).then(result => {
                     //将查询到的宠物对象  赋值给这个模型数据pet
-                    this.pet = result.data;
+                    this.product = result.data;
                     //有图片的时候
-                    if (this.pet.resources) {
-                        this.resources = this.pet.resources.split(",");
+                    if (this.product.resources) {
+                        this.resources = this.product.resources.split(",");
                     }
                 })
             },
-            goShop() {
-                window.open("shop.html?id=" + this.pet.shop.id);
-            },
             adopt() {
                 //点击立即领养跳转到 领养订单页面
-                location.href = "petOrder.html?petId=" + this.pet.id;
+                // location.href = "petOrder.html?petId=" + this.pet.id;
                 /*this.$http.post("/pet/adopt",{id:this.pet.id}).then(res => {
                     if(res.data.success){//领养成功
                         //领养成功跳转到前台宠物列表
