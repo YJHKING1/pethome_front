@@ -92,7 +92,7 @@
                     </el-upload>
                 </el-form-item>
                 <el-form-item prop="salecount" label="销量">
-                    <el-input-number v-model="saveForm.saleprice"></el-input-number>
+                    <el-input-number v-model="saveForm.salecount"></el-input-number>
                 </el-form-item>
                 <el-form-item label="简介" prop="intro">
                     <!-- v-if="saveForm.petDetail" 修改v-model绑定对象报错问题，v-if对需要显示的数据判断下 -->
@@ -188,11 +188,11 @@ export default {
             saveForm: {
                 id: null,
                 name: '',
-                costprice: '',
-                saleprice: '',
+                costprice: 0,
+                saleprice: 0,
                 resources: '',
-                salecount: '',
-                state: 1,
+                salecount: 0,
+                state: 0,
                 offsaletime: '',
                 onsaletime: '',
                 createtime: '',
@@ -484,11 +484,11 @@ export default {
             this.saveForm = {
                 id: null,
                 name: '',
-                costprice: '',
-                saleprice: '',
+                costprice: 0,
+                saleprice: 0,
                 resources: '',
-                salecount: '',
-                state: 1,
+                salecount: 0,
+                state: 0,
                 offsaletime: '',
                 onsaletime: '',
                 createtime: '',
