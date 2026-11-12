@@ -17,7 +17,7 @@
     <meta name="pethome-baidu-map-ak" content="">
 
     <!-- 引入vue和axios -->
-    <script src="./js/plugins/vue/dist/vue.js"></script>
+    <script src="./js/plugins/vue-compat/vue.global.prod.js"></script>
     <script src="./js/plugins/axios/dist/axios.js"></script>
     <!-- axios全局配置 -->
     <script src="./js/common.js"></script>
@@ -107,7 +107,7 @@
                 <div class="pet-info">
                     <!--个人信息 -->
                     <div class="info-main">
-                        <form class="am-form am-form-horizontal" v-model="searchMasterMsg">
+                        <form class="am-form am-form-horizontal">
                             <div class="am-form-group">
                                 <label for="pet-title" class="am-form-label">标题</label>
                                 <div class="am-form-content">
