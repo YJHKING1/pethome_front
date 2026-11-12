@@ -19,12 +19,6 @@ import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
 import quillConfig from './common/js/quill-config';
-import BaiduMap from 'vue-baidu-map'
-
-Vue.use(BaiduMap, {
-    /* Visit http://lbsyun.baidu.com/apiconsole/key for details about app key. */
-    ak: 'awMB6AuLQYGb28GvMVGsjjT8MgMt5LnK'
-})
 // 请求地址
 axios.defaults.baseURL = "http://localhost:8080";
 // 添加富文本组件
@@ -53,7 +47,7 @@ axios.interceptors.request.use(res => {
     }
     return res;
 }, error => {
-    Promise.reject(error)
+    return Promise.reject(error)
 })
 // 后置拦截器
 axios.interceptors.response.use(res => {
@@ -81,11 +75,11 @@ axios.interceptors.response.use(res => {
     }
     return res;
 }, error => {
-    Promise.reject(error);
+    return Promise.reject(error);
 })
 // 路由拦截器
 router.beforeEach((to, from, next) => {
-    if (to.path == '/login' || to.path == "/register") {
+    if (to.path == '/login') {
         // 放行
         next();
     } else {

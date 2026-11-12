@@ -44,3 +44,10 @@ function parseUrlParams2Obj(url) {
     }
     return paramObj;
 }
+
+function sanitizeRichText(value) {
+    if (typeof value !== "string" || !window.DOMPurify) {
+        return "";
+    }
+    return window.DOMPurify.sanitize(value, {USE_PROFILES: {html: true}});
+}

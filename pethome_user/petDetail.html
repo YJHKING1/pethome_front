@@ -22,9 +22,10 @@
     <script type="text/javascript" src="./js/jquery.flexslider.js"></script>
     <script type="text/javascript" src="./js/list.js"></script>
     <!-- 引入vue和axios -->
-    <script src="js/plugins/vue/dist/vue.js"></script>
+    <script src="js/plugins/vue-compat/vue.global.prod.js"></script>
     <script src="js/plugins/axios/dist/axios.js"></script>
     <!-- axios全局配置 -->
+    <script src="js/plugins/dompurify/purify.min.js"></script>
     <script src="js/common.js"></script>
 </head>
 
@@ -422,7 +423,7 @@
                             <div class="attr-list-hd tm-clear">
                                 <h4>简介：</h4></div>
                             <div class="clear"></div>
-                            <div v-html="pet.petDetail.intro"></div>
+                            <div v-html="sanitizeRichText(pet.petDetail.intro)"></div>
                             <div class="clear"></div>
                         </div>
                         <div class="details">
@@ -430,7 +431,7 @@
                                 <h4>领养须知</h4>
                             </div>
                             <div class="twlistNews">
-                                <div v-html="pet.petDetail.adoptNotice"></div>
+                                <div v-html="sanitizeRichText(pet.petDetail.adoptNotice)"></div>
                             </div>
                         </div>
                         <div class="clear"></div>
@@ -1305,6 +1306,7 @@
             logininfo: null
         },
         methods: {
+            sanitizeRichText,
             getPetDetail(id) {
                 this.$http.get("/pet/" + id).then(result => {
                     //将查询到的宠物对象  赋值给这个模型数据pet
