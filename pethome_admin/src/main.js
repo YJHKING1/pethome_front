@@ -53,7 +53,7 @@ axios.interceptors.request.use(res => {
     }
     return res;
 }, error => {
-    Promise.reject(error)
+    return Promise.reject(error)
 })
 // 后置拦截器
 axios.interceptors.response.use(res => {
@@ -81,7 +81,7 @@ axios.interceptors.response.use(res => {
     }
     return res;
 }, error => {
-    Promise.reject(error);
+    return Promise.reject(error);
 })
 // 路由拦截器
 router.beforeEach((to, from, next) => {
