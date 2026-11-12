@@ -21,10 +21,10 @@ import 'quill/dist/quill.bubble.css';
 import quillConfig from './common/js/quill-config';
 import BaiduMap from 'vue-baidu-map'
 
-Vue.use(BaiduMap, {
-    /* Visit http://lbsyun.baidu.com/apiconsole/key for details about app key. */
-    ak: 'awMB6AuLQYGb28GvMVGsjjT8MgMt5LnK'
-})
+const baiduMapAk = process.env.BAIDU_MAP_AK
+if (baiduMapAk) {
+    Vue.use(BaiduMap, {ak: baiduMapAk})
+}
 // 请求地址
 axios.defaults.baseURL = "http://localhost:8080";
 // 添加富文本组件

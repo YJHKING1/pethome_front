@@ -31,7 +31,7 @@
             </el-form-item>
             <el-form-item prop="address" label="店铺地址">
                 <el-input type="text" v-model="shop.address" auto-complete="off" placeholder="请输入地址！"></el-input>
-                <el-button size="small" type="primary" @click="selectAdrress">选择</el-button>
+                <el-button v-if="baiduMapEnabled" size="small" type="primary" @click="selectAdrress">选择</el-button>
             </el-form-item>
             <el-form-item prop="logo" label="店铺Logo">
                 <!--
@@ -79,6 +79,7 @@
         </el-form>
         <!--百度地图-->
         <el-dialog
+            v-if="baiduMapEnabled"
             title="选择地址"
             :visible.sync="dialogVisable"
             width="30%">
@@ -119,6 +120,7 @@ export default {
 
         return {
             //百度地图相关数据：
+            baiduMapEnabled: Boolean(process.env.BAIDU_MAP_AK),
             keyword: '',
             dialogVisable: false,
 
