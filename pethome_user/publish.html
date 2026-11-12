@@ -14,8 +14,7 @@
     <link href="./css/infstyle.css" rel="stylesheet" type="text/css">
     <script src="./AmazeUI-2.4.2/assets/js/jquery.min.js"></script>
     <script src="./AmazeUI-2.4.2/assets/js/amazeui.js"></script>
-    <!-- 引入百度地图 -->
-    <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=LSNHTIDvIKtkv7UgAUKfStSz4QU74osS"></script>
+    <meta name="pethome-baidu-map-ak" content="">
 
     <!-- 引入vue和axios -->
     <script src="./js/plugins/vue/dist/vue.js"></script>
@@ -293,61 +292,34 @@
     });
 </script>
 <script type="text/javascript">
-    // 百度地图API功能
-    function G(id) {
-        return document.getElementById(id);
-    }
-
-    var map = new BMap.Map(""); //没有1-map就删除掉，但是必须传递一个值，空字符串都行
-    //map.centerAndZoom("北京",12);                   // 初始化地图,设置城市和地图级别。
-
-    var ac = new BMap.Autocomplete(    //建立一个自动完成的对象
-        {
-            "input": "suggestId"
-            , "location": map
-        });
-
-    ac.addEventListener("onhighlight", function (e) {  //鼠标放在下拉列表上的事件
-        var str = "";
-        var _value = e.fromitem.value;
-        var value = "";
-        if (e.fromitem.index > -1) {
-            value = _value.province + _value.city + _value.district + _value.street + _value.business;
-        }
-        str = "FromItem<br />index = " + e.fromitem.index + "<br />value = " + value;
-
-        value = "";
-        if (e.toitem.index > -1) {
-            _value = e.toitem.value;
-            value = _value.province + _value.city + _value.district + _value.street + _value.business;
-        }
-        str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
-        //G("searchResultPanel").innerHTML = str;
-    });
-
-    var myValue;
-    ac.addEventListener("onconfirm", function (e) {    //鼠标点击下拉列表后的事件
-        var _value = e.item.value;
-        myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
-        //G("searchResultPanel").innerHTML ="onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
-        //将百度地图的地址赋值给 数据模型
-        vue.searchMasterMsg.address = myValue;
-        setPlace();
-    });
-
-    function setPlace() {
-        map.clearOverlays();    //清除地图上所有覆盖物
-        function myFun() {
-            var pp = local.getResults().getPoi(0).point;    //获取第一个智能搜索的结果
-            map.centerAndZoom(pp, 18);
-            map.addOverlay(new BMap.Marker(pp));    //添加标注
+    (function () {
+        const ak = document.querySelector('meta[name="pethome-baidu-map-ak"]').content.trim();
+        if (!ak) {
+            return;
         }
 
-        var local = new BMap.LocalSearch(map, { //智能搜索
-            onSearchComplete: myFun
-        });
-        local.search(myValue);
-    }
+        window.initPethomeAddressAutocomplete = function () {
+            delete window.initPethomeAddressAutocomplete;
+            if (!window.BMap || !window.BMap.Autocomplete) {
+                return;
+            }
+            const autocomplete = new window.BMap.Autocomplete({input: "suggestId"});
+            autocomplete.addEventListener("onconfirm", function (event) {
+                const address = event.item.value;
+                vue.searchMasterMsg.address = [
+                    address.province, address.city, address.district, address.street, address.business
+                ].join("");
+            });
+        };
+
+        const script = document.createElement("script");
+        script.src = "https://api.map.baidu.com/api?v=2.0&ak=" + encodeURIComponent(ak)
+            + "&callback=initPethomeAddressAutocomplete";
+        script.onerror = function () {
+            delete window.initPethomeAddressAutocomplete;
+        };
+        document.head.appendChild(script);
+    })();
 </script>
 
 
