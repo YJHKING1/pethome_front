@@ -64,9 +64,6 @@
                     </el-button>
                     <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除
                     </el-button>
-                    <el-button type="warning" :disabled="scope.row.state!==1" size="small"
-                               @click="handleAudit(scope.$index, scope.row)">店铺审核
-                    </el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -115,19 +112,6 @@
             direction="rtl">
             <img :src="this.path" alt="">
         </el-drawer>
-        <!-- 审核模态框 -->
-        <el-dialog title="审核店铺" :visible.sync="shopAuditVisible" :close-on-click-modal="false">
-            <el-form :model="shopAuditLog" label-width="80px" ref="shopAuditLogForm">
-                <el-form-item label="备注" prop="note">
-                    <el-input type="textarea" v-model="shopAuditLog.note"></el-input>
-                </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click.native="shopAuditVisible = false">取消</el-button>
-                <el-button type="primary" @click.native="auditPass">通过</el-button>
-                <el-button type="primary" @click.native="auditReject">驳回</el-button>
-            </div>
-        </el-dialog>
         <!--导入对话框-->
         <el-dialog
             title="导入"
@@ -137,7 +121,8 @@
             <el-upload
                 class="upload-demo"
                 drag
-                action="http://localhost:8080/shop/importExcel"
+                action="/shop/importExcel"
+                :http-request="importData"
                 list-type="text"
                 multiple>
                 <i class="el-icon-upload"></i>
@@ -182,8 +167,6 @@ export default {
             path: '',
             // 抽屉显示
             table: false,
-            //审核模态框
-            shopAuditVisible: false,
             // 编辑界面是否显示
             saveFormVisible: false,
             saveLoading: false,
@@ -209,11 +192,6 @@ export default {
                 adminId: null,
                 employee: null
             },
-            //编辑界面数据
-            shopAuditLog: {
-                shopId: null,
-                note: ''
-            }
         }
     },
     methods: {
@@ -235,8 +213,35 @@ export default {
         },
         // 导出
         exportData() {
-            //this.$router.push({ path: '/register' });
-            location.href = "http://localhost:8080/shop/export";
+            return this.$http.get("/shop/export", {responseType: "blob"}).then(({data, headers}) => {
+                if ((headers["content-type"] || "").includes("application/json")) {
+                    this.$message.error("导出失败，请确认登录状态和导出权限");
+                    return;
+                }
+                const url = URL.createObjectURL(data);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "shop.xls";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }).catch(() => this.$message.error("导出失败"));
+        },
+        importData({file}) {
+            const formData = new FormData();
+            formData.append("file", file);
+            return this.$http.post("/shop/importExcel", formData).then(({data}) => {
+                if (!data.success) {
+                    throw new Error(data.msg || "导入失败，请确认登录状态和导入权限");
+                }
+                this.$message.success("导入成功");
+                this.getShops();
+                return data;
+            }).catch(error => {
+                this.$message.error(error.message || "导入失败");
+                throw error;
+            });
         },
         // 打开抽屉
         openTable(row) {
@@ -253,52 +258,6 @@ export default {
                 })
                 .catch(_ => {
                 });
-        },
-        //点击店铺审核弹出模态框
-        handleAudit(index, row) {
-            this.shopAuditLog = {
-                shopId: null,
-                note: ''
-            };
-            this.shopAuditLog.shopId = row.id;
-            this.shopAuditVisible = true;
-        },
-        //审核驳回
-        auditReject() {
-            this.$http.post("/shop/audit/reject", this.shopAuditLog).then(res => {
-                if (res.data.success) {
-                    this.$message({
-                        message: '驳回成功',
-                        type: 'success'
-                    });
-                } else {
-                    this.$message({
-                        message: '驳回失败',
-                        type: 'error'
-                    });
-                }
-                this.shopAuditVisible = false;
-                this.getShops();
-            })
-        },
-        //审核通过
-        auditPass() {
-            this.$http.post("/shop/audit/pass", this.shopAuditLog).then(result => {
-                result = result.data;
-                if (result.success) {
-                    this.$message({
-                        message: '审核通过',
-                        type: 'success'
-                    });
-                } else {
-                    this.$message({
-                        message: '审核失败',
-                        type: 'error'
-                    });
-                }
-                this.shopAuditVisible = false;
-                this.getShops();
-            })
         },
         // 获取员工列表
         getEmployees() {

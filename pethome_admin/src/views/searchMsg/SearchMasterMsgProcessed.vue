@@ -75,19 +75,6 @@
                     <el-input v-model="editForm.costprice" auto-complete="off"></el-input>
                 </el-form-item>
 
-                <el-form-item label="资源" prop="resources">
-                    <!--<el-input v-model="editForm.resources" auto-complete="off"></el-input>-->
-                    <el-upload
-                            class="upload-demo"
-                            action="/api/dfs"
-                            :on-remove="handleRemove"
-                            :on-success="handleSuccess"
-                            :file-list="fileList"
-                            list-type="picture">
-                        <el-button size="small" type="primary">点击上传</el-button>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                    </el-upload>
-                </el-form-item>
 
                 <el-form-item label="简介" prop="intro">
                     <!--<el-input v-model="editForm.detail.intro" auto-complete="off"></el-input>-->
@@ -124,7 +111,6 @@
         data() {
             return {
                 quillOption: null,
-                fileList:[],
                 title:'',
                 searchForm: {
                     keyword: ''
@@ -166,56 +152,6 @@
             }
         },
         methods: {
-            handleSuccess(response, file, fileList){
-                console.log("===========")
-                console.log(fileList);
-                //resultObj 文件的服务器地址，放到数据库中
-                //根据双向绑定 logo 就有值 1,2,3
-                let resourcesTmp = '';
-                if(fileList!=null && fileList.length>0){
-                    for(var i=0;i<fileList.length;i++){
-                        if(i==0){
-                            resourcesTmp = resourcesTmp+fileList[i].response.resultObj;
-                        }else{
-                            resourcesTmp = resourcesTmp+","+fileList[i].response.resultObj;
-                        }
-                    }
-                }
-                this.editForm.resources = resourcesTmp;
-                console.log(this.editForm.resources)
-            },
-            handleRemove(file, fileList) {
-                var filePath =file.response.resultObj;
-                console.log(fileList)
-                this.$http.delete("/common/fastDfs/?path="+filePath)
-                    .then(res=>{
-                        if(res.data.success){
-                            this.$message({
-                                message: '删除成功!',
-                                type: 'success'
-                            });
-                        }else{
-                            this.$message({
-                                message: '删除失败!',
-                                type: 'error'
-                            });
-                        }
-                    })
-
-                //删除图片后移除data里面数据
-                let resourcesTmp = '';
-                if(fileList!=null && fileList.length>0){
-                    for(var i=0;i<fileList.length;i++){
-                        if(i==0){
-                            resourcesTmp = resourcesTmp+fileList[i].response.resultObj;
-                        }else{
-                            resourcesTmp = resourcesTmp+","+fileList[i].response.resultObj;
-                        }
-                    }
-                }
-                this.editForm.resources = resourcesTmp;
-                console.log(this.editForm.resources);
-            },
             handleCurrentChange(val) {
                 this.page = val;
                 this.getSearchMasterMsgs();
@@ -277,14 +213,6 @@
                         this.editForm.detail = result.data;
                     });
 
-                //图片回显
-                this.fileList = [];
-                var resources =  row.resources;
-                var resourcesArr = resources.split(",");
-                for(var i=0;i<resourcesArr.length;i++){
-                    console.log("http://121.37.194.36"+resourcesArr[i])
-                    this.fileList.push({url:"http://121.37.194.36"+resourcesArr[i]})
-                }
             },
             //显示新增界面
             handleAdd: function () {

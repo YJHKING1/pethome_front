@@ -12,8 +12,6 @@
         <el-form-item style="width:100%;">
             <el-button type="primary" style="width:47%;" @click.native.prevent="handleSubmit2" :loading="logining">登录
             </el-button>
-            <el-button type="primary" style="width:47%;" @click.native.prevent="goRegister">店铺入驻
-            </el-button>
             <!--<el-button @click.native.prevent="handleReset2">重置</el-button>-->
         </el-form-item>
     </el-form>
@@ -50,9 +48,6 @@ export default {
         },
         handleSubmit2(ev) {
             this.login();
-        },
-        goRegister() {
-            this.$router.push({path: '/register'});
         },
         login() {
             this.$refs.ruleForm2.validate((valid) => {

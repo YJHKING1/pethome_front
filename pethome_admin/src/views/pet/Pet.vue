@@ -34,10 +34,10 @@
                 <template scope="scope">
                     <!--如果仅有一张图片时直接展示-->
                     <el-image :src="imgPrefix+scope.row.resources" width="50px" alt=""
-                              v-if="!scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
+                              v-if="scope.row.resources && !scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
                     <!--如果有多张图片时展示第一张-->
                     <el-image :src="imgPrefix+scope.row.resources.split(',')[0]" width="50px" alt=""
-                              v-else-if="scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
+                              v-else-if="scope.row.resources && scope.row.resources.includes(',')" :preview-src-list="srcList" fit="contain"/>
                 </template>
             </el-table-column>
             <el-table-column prop="state" label="状态" width="100" sortable>
@@ -99,17 +99,6 @@
                                      value: 'id'
                                  }" clearable>
                     </el-cascader>
-                </el-form-item>
-                <el-form-item label="宠物图片" prop="resources">
-                    <el-upload class="upload-demo"
-                               action="http://localhost:8080/fastDfs"
-                               :on-remove="handleRemove"
-                               :on-success="handleSuccess"
-                               :file-list="fileList"
-                               list-type="picture">
-                        <el-button size="small" type="primary">点击上传</el-button>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                    </el-upload>
                 </el-form-item>
                 <el-form-item label="简介" prop="intro">
                     <!-- v-if="saveForm.petDetail" 修改v-model绑定对象报错问题，v-if对需要显示的数据判断下 -->
@@ -178,7 +167,6 @@ export default {
             // 列表数据
             data: [],
             //文件上传相关数据
-            fileList: [],
             // 加载框
             listLoading: false,
             // 总数
@@ -270,13 +258,9 @@ export default {
                 this.data = res.data;
             });
         },
-        //图片预览
-        handlePreview(file) {
-            console.log(file);
-        },
         // 点击图片时的图片预览列表
         maxImg(row, column) {
-            if (column.property == "resources") {
+            if (column.property == "resources" && row.resources) {
                 if (!row.resources.includes(',')) {
                     this.srcList = [this.imgPrefix + row.resources];
                     this.listLoading = false;
@@ -285,62 +269,6 @@ export default {
                     for (let img of imgURL) {
                         this.srcList.push(this.imgPrefix + img);
                     }
-                }
-            }
-        },
-        //1.资源图片上传成功之后的处理
-        handleSuccess(response, file, fileList) {
-            //处理resources - 数据库操作
-            if (this.saveForm.resources) { //有值  /group1/M00/00/72/rBEAA2BHkmaAbEOhAAEUusLjqqk505.png
-                this.saveForm.resources = this.saveForm.resources + "," + response.resultObj;
-            } else {
-                this.saveForm.resources = response.resultObj;
-            }
-            //处理fileList - 页面回显的
-            this.fileList = [];//清空
-            if (this.saveForm.resources) {
-                // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
-                var resourcesArr = this.saveForm.resources.split(",");
-                for (var i = 0; i < resourcesArr.length; i++) {
-                    this.fileList.push({url: "http://123.207.27.208" + resourcesArr[i]})
-                }
-            }
-        },
-        //2.资源图片点击删除时的处理
-        handleRemove(file, fileList) {
-            //删除fastDfs上的图片
-            var filePath = file.url; // http://123.207.27.208/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
-            //删除接口需要：/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
-            var path = filePath.substring(filePath.indexOf("/group")); // /group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg
-            this.$http.delete("/fastDfs/?path=" + path).then(res => {
-                if (res.data.success) {
-                    this.$message.success('删除成功!!!');
-                } else {
-                    this.$message.error('删除失败!!!');
-                }
-            })
-            // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
-            //处理resources - 数据库操作
-            if (this.saveForm.resources) {
-                //["/group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg","/group1/M00/02/1E/rBE3kWHL_GWAAv5mAADpQr0XCJA99.jpeg"]
-                var pathArr = this.saveForm.resources.split(",");
-                for (var i = 0; i < pathArr.length; i++) {
-                    var pathTemp = pathArr[i];
-                    if (pathTemp == path) { //你要删除的图片找到了
-                        //从下标为i的地方开始删除，删1个
-                        pathArr.splice(i, 1);
-                        break;
-                    }
-                }
-                this.saveForm.resources = pathArr.join(",");
-            }
-            //处理fileList - 页面回显的
-            this.fileList = [];//清空
-            if (this.saveForm.resources) {
-                // /group1/M00/02/1B/rBE3kWHB-cCASterAACabDprSz419.jpeg,/group1/M00/02/1B/rBE3kWHB-caAQ3dYAABiwl7Ttcc206.jpg
-                var resourcesArr = this.saveForm.resources.split(",");
-                for (var i = 0; i < resourcesArr.length; i++) {
-                    this.fileList.push({url: "http://123.207.27.208" + resourcesArr[i]})
                 }
             }
         },
@@ -520,14 +448,6 @@ export default {
             this.getSearchMasterMsgs();
             // 获取菜单树
             this.getTypeTree();
-            //图片回显
-            this.fileList = [];
-            if (this.saveForm.resources) {//有值
-                let arr = this.saveForm.resources.split(",");
-                for (var i = 0; i < arr.length; i++) {
-                    this.fileList.push({"url": "http://123.207.27.208" + arr[i]});
-                }
-            }
             // 将改行的父级id赋值给parent
             this.saveForm.parent = row.parentId;
             // 回显
@@ -562,8 +482,6 @@ export default {
                     adoptnotice: ''
                 }
             };
-            //清空图片列表
-            this.fileList = [];
             this.getData();
             this.getShops();
             this.getUsers();

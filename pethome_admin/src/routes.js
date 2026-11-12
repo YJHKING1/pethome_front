@@ -14,8 +14,6 @@ import Employee from "./views/org/Employee";
 import Shop from "./views/org/Shop";
 import Systemdictionarydetail from "./views/system/Systemdictionarydetail";
 import Systemdictionarytype from "./views/system/Systemdictionarytype";
-import ShopRegister from "./views/org/ShopRegister";
-import Activation from "./views/Activation";
 import Menu from "./views/system/Menu";
 import Role from "./views/system/Role";
 import Permission from "./views/system/Permission";
@@ -30,17 +28,6 @@ let routes = [
     {
         path: '/404',
         component: NotFound,
-        name: '',
-        hidden: true
-    },
-    {
-        path: '/register',
-        component: ShopRegister,
-        name: '',
-        hidden: true
-    }, {
-        path: '/activation',
-        component: Activation,
         name: '',
         hidden: true
     },
