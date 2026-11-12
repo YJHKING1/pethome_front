@@ -137,7 +137,8 @@
             <el-upload
                 class="upload-demo"
                 drag
-                action="http://localhost:8080/shop/importExcel"
+                action="/shop/importExcel"
+                :http-request="importData"
                 list-type="text"
                 multiple>
                 <i class="el-icon-upload"></i>
@@ -235,8 +236,35 @@ export default {
         },
         // 导出
         exportData() {
-            //this.$router.push({ path: '/register' });
-            location.href = "http://localhost:8080/shop/export";
+            return this.$http.get("/shop/export", {responseType: "blob"}).then(({data, headers}) => {
+                if ((headers["content-type"] || "").includes("application/json")) {
+                    this.$message.error("导出失败，请确认登录状态和导出权限");
+                    return;
+                }
+                const url = URL.createObjectURL(data);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "shop.xls";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }).catch(() => this.$message.error("导出失败"));
+        },
+        importData({file}) {
+            const formData = new FormData();
+            formData.append("file", file);
+            return this.$http.post("/shop/importExcel", formData).then(({data}) => {
+                if (!data.success) {
+                    throw new Error(data.msg || "导入失败，请确认登录状态和导入权限");
+                }
+                this.$message.success("导入成功");
+                this.getShops();
+                return data;
+            }).catch(error => {
+                this.$message.error(error.message || "导入失败");
+                throw error;
+            });
         },
         // 打开抽屉
         openTable(row) {
